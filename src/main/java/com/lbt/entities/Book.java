@@ -1,0 +1,75 @@
+package com.lbt.entities;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.Objects;
+
+@Entity
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "books")
+public class Book {
+
+    @Id
+    @Column(name = "isbn", length = 50)
+    private String isbn;
+
+    @Column(name = "title", nullable = false, length = 200)
+    private String title;
+
+    @Column(name = "author", nullable = false, length = 150)
+    private String author;
+
+    @Column(name = "genre", nullable = false, length = 100)
+    private String genre;
+
+    @Column(name = "total_copies", nullable = false)
+    private int totalCopies;
+
+    @Column(name = "available_copies", nullable = false)
+    private int availableCopies;
+
+    public void setTotalCopies(int totalCopies) {
+        this.totalCopies = totalCopies;
+        this.availableCopies = totalCopies;
+    }
+
+    public boolean borrowCopy() {
+        if (availableCopies > 0) {
+            availableCopies--;
+            return true;
+        }
+        return false;
+    }
+
+    public void returnCopy() {
+        if (availableCopies < totalCopies) availableCopies++;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s by %s [ISBN:%s] %d/%d copies",
+                title, author, isbn, availableCopies, totalCopies);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return Objects.equals(isbn, book.isbn);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(isbn);
+    }
+}
