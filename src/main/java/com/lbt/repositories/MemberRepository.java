@@ -2,27 +2,27 @@ package com.lbt.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.lbt.entities.Member;
 
 import java.util.Optional;
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, String> {
-	
-	Optional<Member> findByName(String name);	
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
-	default Member findMemberById(String memberId) {
-        return findById(memberId).orElse(null);
-    }
+    Optional<Member> findByName(String name);
 
-    default boolean existsById(String memberId) {
-        return existsById(memberId);
-    }
+    Member findByMemberId(String memberId);
+
+    boolean existsByMemberId(String memberId);
+
+    @Transactional
+    void deleteByMemberId(String memberId);
 
     default boolean delete(String memberId) {
-        if (existsById(memberId)) {
-            deleteById(memberId);
+        if (existsByMemberId(memberId)) {
+            deleteByMemberId(memberId);
             return true;
         }
         return false;

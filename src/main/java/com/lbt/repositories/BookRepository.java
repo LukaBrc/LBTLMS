@@ -2,27 +2,27 @@ package com.lbt.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.lbt.entities.Book;
 
 import java.util.Optional;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, String> {
+public interface BookRepository extends JpaRepository<Book, Long> {
 
-    default Book findByIsbn(String isbn) {
-        return findById(isbn).orElse(null);
-    }
+    Book findByIsbn(String isbn);
 
     Optional<Book> findByTitle(String title);
 
-    default boolean existsByIsbn(String isbn) {
-        return existsById(isbn);
-    }
+    boolean existsByIsbn(String isbn);
+
+    @Transactional
+    void deleteByIsbn(String isbn);
 
     default boolean delete(String isbn) {
-        if (existsById(isbn)) {
-            deleteById(isbn);
+        if (existsByIsbn(isbn)) {
+            deleteByIsbn(isbn);
             return true;
         }
         return false;

@@ -19,7 +19,10 @@ import java.util.Objects;
 public class Book {
 
     @Id
-    @Column(name = "isbn", length = 50)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "isbn", length = 50, unique = true, nullable = false)
     private String isbn;
 
     @Column(name = "title", nullable = false, length = 200)
@@ -60,16 +63,20 @@ public class Book {
                 title, author, isbn, availableCopies, totalCopies);
     }
 
+    public Long getId() {
+        return id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-        return Objects.equals(isbn, book.isbn);
+        return Objects.equals(id, book.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(isbn);
+        return Objects.hash(id);
     }
 }

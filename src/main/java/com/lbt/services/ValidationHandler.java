@@ -1,7 +1,9 @@
 package com.lbt.services;
 
 import com.lbt.entities.Book;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ValidationHandler {
 
 	public void validate(Book book) {

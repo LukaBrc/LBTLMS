@@ -33,6 +33,19 @@ public class BookService {
         return bookRepository.findAll();
     }
 
+    public Book updateBook(String isbn, String title, String author, String genre, int totalCopies) {
+        Book book = bookRepository.findByIsbn(isbn);
+        if (book == null) {
+            throw new IllegalArgumentException("Book not found with ISBN: " + isbn);
+        }
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setGenre(genre);
+        book.setTotalCopies(totalCopies);
+        validationHandler.validate(book);
+        return bookRepository.save(book);
+    }
+
     public void removeBook(String isbn) {
         bookRepository.delete(isbn);
     }

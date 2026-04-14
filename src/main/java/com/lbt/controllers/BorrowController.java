@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/borrows")
+@RequestMapping("/api/v1/borrows")
 @CrossOrigin(origins = "*")
 public class BorrowController {
 

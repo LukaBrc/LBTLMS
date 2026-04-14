@@ -54,6 +54,16 @@ public class BookController {
                 : ResponseEntity.notFound().build();
     }
 
+    @PutMapping("/{isbn}")
+    public ResponseEntity<BookResponse> updateBook(@PathVariable String isbn,
+                                                   @Valid @RequestBody BookRequest request) {
+        Book updatedBook = bookService.updateBook(isbn, request.getTitle(), request.getAuthor(),
+                request.getGenre(), request.getTotalCopies());
+        return updatedBook != null
+                ? ResponseEntity.ok(toResponse(updatedBook))
+                : ResponseEntity.notFound().build();
+    }
+
     @DeleteMapping("/{isbn}")
     public ResponseEntity<Void> removeBook(@PathVariable String isbn) {
         bookService.removeBook(isbn);
