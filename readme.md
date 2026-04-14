@@ -22,31 +22,48 @@ A **Java Spring Boot** application providing RESTful APIs to manage a library's 
 src/
  ├── main/
  │    ├── java/
- │    │    └── com/lbt/lms/
+ │    │    └── com/lbt/
  │    │         ├── controllers/
  │    │         ├── dto/
  │    │         ├── entities/
  │    │         ├── repositories/
- │    │         └── services/
+ │    │         ├── services/
+ │    │         └── lms.java
  │    └── resources/
  │         └── application.properties
  └── test/
-      └── java/com/LBT/LMS/LMSTests.java
+      └── java/com/lbt/
+           ├── BookControllerTest.java
+           ├── BookServiceTest.java
+           ├── BorrowControllerTest.java
+           ├── BorrowTransactionServiceTest.java
+           ├── BugConditionApiTest.java
+           ├── BugConditionExplorationTest.java
+           ├── BugConditionValidationHandlerTest.java
+           ├── EntityTest.java
+           ├── LMSTests.java
+           ├── MemberControllerTest.java
+           ├── MemberServiceTest.java
+           └── PreservationTest.java
 ```
 
 ---
 
 ## 🚀 Technologies
 
-- Java
-- Spring Boot
+- Java 17
+- Spring Boot 4.0.2
 - JPA/Hibernate
+- MySQL (production)
+- H2 (testing)
+- Lombok
+- Spring Validation
 
 ---
 
 ## 🧪 Testing
 
-Unit tests are located in `src/test/java/com/LBT/LMS/LMSTests.java`.
+Unit tests are located in `src/test/java/com/lbt/`. Test files cover controllers, services, entities, and bug condition validation.
 
 ---
 
