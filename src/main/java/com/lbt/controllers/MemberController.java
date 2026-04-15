@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/members")
+@RequestMapping("/api/v1/members")
 @CrossOrigin(origins = "*")
 public class MemberController {
 
@@ -43,6 +43,21 @@ public class MemberController {
         return member != null 
                 ? ResponseEntity.ok(toResponse(member)) 
                 : ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/{memberId}")
+    public ResponseEntity<MemberResponse> updateMember(@PathVariable String memberId,
+                                                        @Valid @RequestBody MemberRequest request) {
+        Member updated = memberService.updateMember(memberId, request.getName(), request.getContact());
+        return updated != null
+                ? ResponseEntity.ok(toResponse(updated))
+                : ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{memberId}")
+    public ResponseEntity<Void> deleteMember(@PathVariable String memberId) {
+        memberService.deleteMember(memberId);
+        return ResponseEntity.noContent().build();
     }
 
     private MemberResponse toResponse(Member member) {

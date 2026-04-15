@@ -24,7 +24,7 @@ public class MemberService {
         if (name == null || memberId == null || contact == null) {
             throw new IllegalArgumentException("Name, ID and contact are required");
         }
-        if (memberRepository.existsById(memberId)) {
+        if (memberRepository.existsByMemberId(memberId)) {
             throw new IllegalArgumentException("Member ID " + memberId + " is already registered");
         }
 
@@ -37,7 +37,7 @@ public class MemberService {
     }
 
     public Member findById(String memberId) {
-        Member member = memberRepository.findMemberById(memberId);
+        Member member = memberRepository.findByMemberId(memberId);
         if (member != null) {
             List<String> activeIsbns = transactionRepository.findActiveBookIsbnsByMemberId(memberId);
             member.setBorrowedIsbns(activeIsbns);
@@ -52,5 +52,23 @@ public class MemberService {
             m.setBorrowedIsbns(activeIsbns);
         }
         return members;
+    }
+
+    public Member updateMember(String memberId, String name, String contact) {
+        Member member = memberRepository.findByMemberId(memberId);
+        if (member == null) {
+            throw new IllegalArgumentException("Member not found: " + memberId);
+        }
+        member.setName(name);
+        member.setContact(contact);
+        return memberRepository.save(member);
+    }
+
+    public void deleteMember(String memberId) {
+        Member member = memberRepository.findByMemberId(memberId);
+        if (member == null) {
+            throw new IllegalArgumentException("Member not found: " + memberId);
+        }
+        memberRepository.delete(member);
     }
 }

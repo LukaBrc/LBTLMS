@@ -19,14 +19,18 @@ import java.util.Objects;
 public class Book {
 
     @Id
-    @Column(name = "isbn", length = 50)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "isbn", length = 50, unique = true, nullable = false)
     private String isbn;
 
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    @Column(name = "author", nullable = false, length = 150)
-    private String author;
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private Author author;
 
     @Column(name = "genre", nullable = false, length = 100)
     private String genre;
@@ -57,7 +61,11 @@ public class Book {
     @Override
     public String toString() {
         return String.format("%s by %s [ISBN:%s] %d/%d copies",
-                title, author, isbn, availableCopies, totalCopies);
+                title, author != null ? author.getName() : "Unknown", isbn, availableCopies, totalCopies);
+    }
+
+    public Long getId() {
+        return id;
     }
 
     @Override
@@ -65,11 +73,11 @@ public class Book {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-        return Objects.equals(isbn, book.isbn);
+        return Objects.equals(id, book.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(isbn);
+        return Objects.hash(id);
     }
 }

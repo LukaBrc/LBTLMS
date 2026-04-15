@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+
 @Entity
 @Getter
 @Setter
@@ -17,7 +18,10 @@ import java.util.Objects;
 public class Member {
 
     @Id
-    @Column(name = "member_id", length = 50)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "member_id", length = 50, unique = true, nullable = false)
     private String memberId;
 
     @Column(name = "name", nullable = false, length = 150)
@@ -26,7 +30,10 @@ public class Member {
     @Column(name = "contact", nullable = false, length = 200)
     private String contact;
 
-    private final List<String> borrowedIsbns = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "member_borrowed_isbns", joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name = "isbn")
+    private List<String> borrowedIsbns = new ArrayList<>();
 
     private static final int MAX_BORROW = 5;
 
@@ -52,16 +59,20 @@ public class Member {
         return "Member: " + name + " (ID:" + memberId + ") Borrowed: " + borrowedIsbns.size();
     }
 
+    public Long getId() {
+        return id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Member member = (Member) o;
-        return Objects.equals(memberId, member.memberId);
+        return Objects.equals(id, member.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(memberId);
+        return Objects.hash(id);
     }
 }

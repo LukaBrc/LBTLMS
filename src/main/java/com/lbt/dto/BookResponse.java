@@ -6,7 +6,8 @@ import lombok.Data;
 public class BookResponse {
     private String isbn;
     private String title;
-    private String author;
+    private Long authorId;
+    private String authorName;
     private String genre;
     private int totalCopies;
     private int availableCopies;

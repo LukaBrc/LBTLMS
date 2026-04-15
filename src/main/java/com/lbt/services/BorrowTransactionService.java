@@ -29,7 +29,7 @@ public class BorrowTransactionService {
 
     public boolean borrowBook(String isbn, String memberId) {
         Book book = bookRepository.findByIsbn(isbn);
-        Member member = memberRepository.findMemberById(memberId);
+        Member member = memberRepository.findByMemberId(memberId);
 
         if (book == null) return false;
         if (member == null) return false;
@@ -50,7 +50,7 @@ public class BorrowTransactionService {
 
     public boolean returnBook(String isbn, String memberId) {
         Book book = bookRepository.findByIsbn(isbn);
-        Member member = memberRepository.findMemberById(memberId);
+        Member member = memberRepository.findByMemberId(memberId);
 
         if (book == null || member == null) return false;
 

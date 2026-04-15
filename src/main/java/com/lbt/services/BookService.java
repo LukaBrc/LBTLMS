@@ -2,6 +2,7 @@ package com.lbt.services;
 
 import org.springframework.stereotype.Service;
 
+import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.repositories.BookRepository;
 
@@ -13,10 +14,13 @@ public class BookService {
     private final BookRepository bookRepository;
 
 	private final ValidationHandler validationHandler;
+
+	private final AuthorService authorService;
 	
-    public BookService(BookRepository bookRepository, ValidationHandler validationHandler) {
+    public BookService(BookRepository bookRepository, ValidationHandler validationHandler, AuthorService authorService) {
         this.bookRepository = bookRepository;
         this.validationHandler = validationHandler;
+        this.authorService = authorService;
     }
 
     public void addBook(Book book) {
@@ -31,6 +35,20 @@ public class BookService {
 
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
+    }
+
+    public Book updateBook(String isbn, String title, Long authorId, String genre, int totalCopies) {
+        Book book = bookRepository.findByIsbn(isbn);
+        if (book == null) {
+            throw new IllegalArgumentException("Book not found with ISBN: " + isbn);
+        }
+        Author author = authorService.getAuthorById(authorId);
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setGenre(genre);
+        book.setTotalCopies(totalCopies);
+        validationHandler.validate(book);
+        return bookRepository.save(book);
     }
 
     public void removeBook(String isbn) {
