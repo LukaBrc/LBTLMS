@@ -6,9 +6,11 @@ import com.lbt.controllers.GlobalExceptionHandler;
 import com.lbt.controllers.MemberController;
 import com.lbt.dto.BookResponse;
 import com.lbt.dto.MemberResponse;
+import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.entities.Member;
+import com.lbt.services.AuthorService;
 import com.lbt.services.BookService;
 import com.lbt.services.BorrowTransactionService;
 import com.lbt.services.MemberService;
@@ -117,6 +119,9 @@ class PreservationTest {
         private BookService bookService;
 
         @MockitoBean
+        private AuthorService authorService;
+
+        @MockitoBean
         private MemberService memberService;
 
         @MockitoBean
@@ -128,10 +133,12 @@ class PreservationTest {
         @DisplayName("Test 2a — POST /api/v1/books with valid request returns 201 Created")
         void bookPostValid() throws Exception {
             // Validates: Requirements 3.2
+            when(authorService.getAuthorById(1L)).thenReturn(Author.builder().id(1L).name("Robert C. Martin").build());
+
             String validBookJson = """
                     {
                         "title": "Clean Code",
-                        "author": "Robert C. Martin",
+                        "authorId": 1,
                         "isbn": "978-0-13-235088-4",
                         "genre": "Software",
                         "totalCopies": 5
@@ -153,7 +160,6 @@ class PreservationTest {
             String invalidBookJson = """
                     {
                         "title": "",
-                        "author": "",
                         "isbn": "",
                         "genre": "",
                         "totalCopies": 0
@@ -172,10 +178,11 @@ class PreservationTest {
         @DisplayName("Test 3 — GET /api/v1/books returns 200 with list of books")
         void bookGetAll() throws Exception {
             // Validates: Requirements 3.3
+            Author author = Author.builder().id(1L).name("Robert C. Martin").build();
             Book book = Book.builder()
                     .isbn("978-0-13-235088-4")
                     .title("Clean Code")
-                    .author("Robert C. Martin")
+                    .author(author)
                     .genre("Software")
                     .totalCopies(5)
                     .availableCopies(3)
@@ -187,7 +194,8 @@ class PreservationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].isbn").value("978-0-13-235088-4"))
                     .andExpect(jsonPath("$[0].title").value("Clean Code"))
-                    .andExpect(jsonPath("$[0].author").value("Robert C. Martin"))
+                    .andExpect(jsonPath("$[0].authorId").value(1))
+                    .andExpect(jsonPath("$[0].authorName").value("Robert C. Martin"))
                     .andExpect(jsonPath("$[0].genre").value("Software"))
                     .andExpect(jsonPath("$[0].totalCopies").value(5))
                     .andExpect(jsonPath("$[0].availableCopies").value(3));
@@ -199,10 +207,11 @@ class PreservationTest {
         @DisplayName("Test 4a — GET /api/v1/books/{isbn} for existing book returns 200")
         void bookGetByIsbnFound() throws Exception {
             // Validates: Requirements 3.4
+            Author author = Author.builder().id(1L).name("Robert C. Martin").build();
             Book book = Book.builder()
                     .isbn("978-0-13-235088-4")
                     .title("Clean Code")
-                    .author("Robert C. Martin")
+                    .author(author)
                     .genre("Software")
                     .totalCopies(5)
                     .availableCopies(5)
@@ -363,7 +372,7 @@ class PreservationTest {
             String bookJson = """
                     {
                         "title": "Test",
-                        "author": "Author",
+                        "authorId": 1,
                         "isbn": "123",
                         "genre": "Genre",
                         "totalCopies": 1
@@ -385,7 +394,6 @@ class PreservationTest {
             String invalidJson = """
                     {
                         "title": "",
-                        "author": "",
                         "isbn": "",
                         "genre": "",
                         "totalCopies": 0
@@ -397,7 +405,6 @@ class PreservationTest {
                             .content(invalidJson))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.title").value("Title is required"))
-                    .andExpect(jsonPath("$.author").value("Author is required"))
                     .andExpect(jsonPath("$.isbn").value("ISBN is required"))
                     .andExpect(jsonPath("$.genre").value("Genre is required"));
         }
@@ -415,10 +422,11 @@ class PreservationTest {
         @DisplayName("Book.borrowCopy() decrements availableCopies")
         void bookBorrowCopy() {
             // Validates: Requirements 3.8
+            Author author = Author.builder().id(1L).name("Robert C. Martin").build();
             Book book = Book.builder()
                     .isbn("978-0-13-235088-4")
                     .title("Clean Code")
-                    .author("Robert C. Martin")
+                    .author(author)
                     .genre("Software")
                     .totalCopies(3)
                     .availableCopies(3)
@@ -434,10 +442,11 @@ class PreservationTest {
         @DisplayName("Book.borrowCopy() returns false when no copies available")
         void bookBorrowCopyNoneAvailable() {
             // Validates: Requirements 3.8
+            Author author = Author.builder().id(1L).name("Robert C. Martin").build();
             Book book = Book.builder()
                     .isbn("978-0-13-235088-4")
                     .title("Clean Code")
-                    .author("Robert C. Martin")
+                    .author(author)
                     .genre("Software")
                     .totalCopies(1)
                     .availableCopies(0)
@@ -453,10 +462,11 @@ class PreservationTest {
         @DisplayName("Book.returnCopy() increments availableCopies")
         void bookReturnCopy() {
             // Validates: Requirements 3.9
+            Author author = Author.builder().id(1L).name("Robert C. Martin").build();
             Book book = Book.builder()
                     .isbn("978-0-13-235088-4")
                     .title("Clean Code")
-                    .author("Robert C. Martin")
+                    .author(author)
                     .genre("Software")
                     .totalCopies(3)
                     .availableCopies(2)
@@ -471,10 +481,11 @@ class PreservationTest {
         @DisplayName("Book.returnCopy() does not exceed totalCopies")
         void bookReturnCopyAtMax() {
             // Validates: Requirements 3.9
+            Author author = Author.builder().id(1L).name("Robert C. Martin").build();
             Book book = Book.builder()
                     .isbn("978-0-13-235088-4")
                     .title("Clean Code")
-                    .author("Robert C. Martin")
+                    .author(author)
                     .genre("Software")
                     .totalCopies(3)
                     .availableCopies(3)

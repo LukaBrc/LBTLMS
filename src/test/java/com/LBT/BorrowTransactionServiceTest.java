@@ -1,5 +1,6 @@
 package com.lbt;
 
+import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.entities.Member;
@@ -34,15 +35,17 @@ class BorrowTransactionServiceTest {
     @InjectMocks
     private BorrowTransactionService borrowService;
 
+    private Author sampleAuthor;
     private Book sampleBook;
     private Member sampleMember;
 
     @BeforeEach
     void setUp() {
+        sampleAuthor = Author.builder().id(1L).name("A").build();
         sampleBook = Book.builder()
                 .isbn("ISBN-1")
                 .title("T")
-                .author("A")
+                .author(sampleAuthor)
                 .genre("G")
                 .totalCopies(3)
                 .availableCopies(3)
@@ -94,7 +97,7 @@ class BorrowTransactionServiceTest {
     @Test
     void borrowBook_returnsFalseWhenNoCopiesAvailable() {
         sampleBook = Book.builder()
-                .isbn("ISBN-1").title("T").author("A").genre("G")
+                .isbn("ISBN-1").title("T").author(sampleAuthor).genre("G")
                 .totalCopies(1).availableCopies(0).build();
         when(bookRepository.findByIsbn("ISBN-1")).thenReturn(sampleBook);
         when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
@@ -109,7 +112,7 @@ class BorrowTransactionServiceTest {
         tx.setMemberId("M001");
 
         sampleBook = Book.builder()
-                .isbn("ISBN-1").title("T").author("A").genre("G")
+                .isbn("ISBN-1").title("T").author(sampleAuthor).genre("G")
                 .totalCopies(3).availableCopies(2).build();
         sampleMember.borrowBook("ISBN-1");
 

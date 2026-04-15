@@ -2,7 +2,9 @@ package com.lbt;
 
 import com.lbt.controllers.BookController;
 import com.lbt.controllers.GlobalExceptionHandler;
+import com.lbt.entities.Author;
 import com.lbt.entities.Book;
+import com.lbt.services.AuthorService;
 import com.lbt.services.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +29,21 @@ class BookControllerTest {
     @MockitoBean
     private BookService bookService;
 
+    @MockitoBean
+    private AuthorService authorService;
+
+    private Author sampleAuthor() {
+        return Author.builder().id(1L).name("Bloch").build();
+    }
+
     @Test
     void postBook_returns201() throws Exception {
+        when(authorService.getAuthorById(1L)).thenReturn(sampleAuthor());
+
         mockMvc.perform(post("/api/v1/books")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {"title":"Effective Java","author":"Bloch","isbn":"978-1","genre":"Programming","totalCopies":5}
+                            {"title":"Effective Java","authorId":1,"isbn":"978-1","genre":"Programming","totalCopies":5}
                             """))
                 .andExpect(status().isCreated());
         verify(bookService).addBook(any(Book.class));
@@ -43,14 +54,15 @@ class BookControllerTest {
         mockMvc.perform(post("/api/v1/books")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {"author":"Bloch","isbn":"978-1","genre":"Programming","totalCopies":5}
+                            {"authorId":1,"isbn":"978-1","genre":"Programming","totalCopies":5}
                             """))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void getAllBooks_returns200WithList() throws Exception {
-        Book book = Book.builder().isbn("978-1").title("T").author("A").genre("G").totalCopies(3).availableCopies(3).build();
+        Author author = sampleAuthor();
+        Book book = Book.builder().isbn("978-1").title("T").author(author).genre("G").totalCopies(3).availableCopies(3).build();
         when(bookService.getAllBooks()).thenReturn(List.of(book));
 
         mockMvc.perform(get("/api/v1/books"))
@@ -60,7 +72,8 @@ class BookControllerTest {
 
     @Test
     void getBookByIsbn_returns200() throws Exception {
-        Book book = Book.builder().isbn("978-1").title("T").author("A").genre("G").totalCopies(3).availableCopies(3).build();
+        Author author = sampleAuthor();
+        Book book = Book.builder().isbn("978-1").title("T").author(author).genre("G").totalCopies(3).availableCopies(3).build();
         when(bookService.findByIsbn("978-1")).thenReturn(book);
 
         mockMvc.perform(get("/api/v1/books/978-1"))
@@ -78,13 +91,14 @@ class BookControllerTest {
 
     @Test
     void putBook_returns200WithUpdatedBook() throws Exception {
-        Book updated = Book.builder().isbn("978-1").title("New").author("New A").genre("New G").totalCopies(10).availableCopies(10).build();
-        when(bookService.updateBook(eq("978-1"), eq("New"), eq("New A"), eq("New G"), eq(10))).thenReturn(updated);
+        Author author = Author.builder().id(2L).name("New A").build();
+        Book updated = Book.builder().isbn("978-1").title("New").author(author).genre("New G").totalCopies(10).availableCopies(10).build();
+        when(bookService.updateBook(eq("978-1"), eq("New"), eq(2L), eq("New G"), eq(10))).thenReturn(updated);
 
         mockMvc.perform(put("/api/v1/books/978-1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {"title":"New","author":"New A","isbn":"978-1","genre":"New G","totalCopies":10}
+                            {"title":"New","authorId":2,"isbn":"978-1","genre":"New G","totalCopies":10}
                             """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("New"));
@@ -98,7 +112,7 @@ class BookControllerTest {
         mockMvc.perform(put("/api/v1/books/UNKNOWN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {"title":"T","author":"A","isbn":"UNKNOWN","genre":"G","totalCopies":1}
+                            {"title":"T","authorId":1,"isbn":"UNKNOWN","genre":"G","totalCopies":1}
                             """))
                 .andExpect(status().isBadRequest());
     }

@@ -1,0 +1,11 @@
+package com.lbt.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+public class AuthorRequest {
+
+    @NotBlank(message = "Name is required")
+    private String name;
+}

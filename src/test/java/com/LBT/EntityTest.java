@@ -1,5 +1,6 @@
 package com.lbt;
 
+import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.entities.Member;
 import org.junit.jupiter.api.Test;
@@ -8,18 +9,22 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EntityTest {
 
+    private Author sampleAuthor() {
+        return Author.builder().id(1L).name("A").build();
+    }
+
     // --- Book.borrowCopy() ---
 
     @Test
     void borrowCopy_decrementsAvailableCopies() {
-        Book book = Book.builder().isbn("ISBN-1").title("T").author("A").genre("G").totalCopies(3).availableCopies(3).build();
+        Book book = Book.builder().isbn("ISBN-1").title("T").author(sampleAuthor()).genre("G").totalCopies(3).availableCopies(3).build();
         assertTrue(book.borrowCopy());
         assertEquals(2, book.getAvailableCopies());
     }
 
     @Test
     void borrowCopy_returnsFalseWhenNoCopiesAvailable() {
-        Book book = Book.builder().isbn("ISBN-1").title("T").author("A").genre("G").totalCopies(1).availableCopies(0).build();
+        Book book = Book.builder().isbn("ISBN-1").title("T").author(sampleAuthor()).genre("G").totalCopies(1).availableCopies(0).build();
         assertFalse(book.borrowCopy());
         assertEquals(0, book.getAvailableCopies());
     }
@@ -28,14 +33,14 @@ class EntityTest {
 
     @Test
     void returnCopy_incrementsAvailableCopies() {
-        Book book = Book.builder().isbn("ISBN-1").title("T").author("A").genre("G").totalCopies(3).availableCopies(2).build();
+        Book book = Book.builder().isbn("ISBN-1").title("T").author(sampleAuthor()).genre("G").totalCopies(3).availableCopies(2).build();
         book.returnCopy();
         assertEquals(3, book.getAvailableCopies());
     }
 
     @Test
     void returnCopy_doesNotExceedTotalCopies() {
-        Book book = Book.builder().isbn("ISBN-1").title("T").author("A").genre("G").totalCopies(3).availableCopies(3).build();
+        Book book = Book.builder().isbn("ISBN-1").title("T").author(sampleAuthor()).genre("G").totalCopies(3).availableCopies(3).build();
         book.returnCopy();
         assertEquals(3, book.getAvailableCopies());
     }

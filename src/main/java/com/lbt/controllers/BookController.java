@@ -2,7 +2,9 @@ package com.lbt.controllers;
 
 import com.lbt.dto.BookRequest;
 import com.lbt.dto.BookResponse;
+import com.lbt.entities.Author;
 import com.lbt.entities.Book;
+import com.lbt.services.AuthorService;
 import com.lbt.services.BookService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -17,23 +19,26 @@ import java.util.List;
 public class BookController {
 
     private final BookService bookService;
+    private final AuthorService authorService;
 
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, AuthorService authorService) {
         this.bookService = bookService;
+        this.authorService = authorService;
     }
 
     @PostMapping
     public ResponseEntity<Void> addBook(@Valid @RequestBody BookRequest request) {
-    		var book = Book.builder()
-				    	.title(request.getTitle())
-				    	.author(request.getAuthor())
-				    	.genre(request.getGenre())
-				    	.isbn(request.getIsbn())
-				    	.totalCopies(request.getTotalCopies())
-				    	.build();
-    	
-        	bookService.addBook(book);
-        
+        Author author = authorService.getAuthorById(request.getAuthorId());
+        var book = Book.builder()
+                .title(request.getTitle())
+                .author(author)
+                .genre(request.getGenre())
+                .isbn(request.getIsbn())
+                .totalCopies(request.getTotalCopies())
+                .build();
+
+        bookService.addBook(book);
+
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -57,7 +62,7 @@ public class BookController {
     @PutMapping("/{isbn}")
     public ResponseEntity<BookResponse> updateBook(@PathVariable String isbn,
                                                    @Valid @RequestBody BookRequest request) {
-        Book updatedBook = bookService.updateBook(isbn, request.getTitle(), request.getAuthor(),
+        Book updatedBook = bookService.updateBook(isbn, request.getTitle(), request.getAuthorId(),
                 request.getGenre(), request.getTotalCopies());
         return updatedBook != null
                 ? ResponseEntity.ok(toResponse(updatedBook))
@@ -74,7 +79,8 @@ public class BookController {
         BookResponse r = new BookResponse();
         r.setIsbn(book.getIsbn());
         r.setTitle(book.getTitle());
-        r.setAuthor(book.getAuthor());
+        r.setAuthorId(book.getAuthor().getId());
+        r.setAuthorName(book.getAuthor().getName());
         r.setGenre(book.getGenre());
         r.setTotalCopies(book.getTotalCopies());
         r.setAvailableCopies(book.getAvailableCopies());

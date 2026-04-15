@@ -28,8 +28,9 @@ public class Book {
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    @Column(name = "author", nullable = false, length = 150)
-    private String author;
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private Author author;
 
     @Column(name = "genre", nullable = false, length = 100)
     private String genre;
@@ -60,7 +61,7 @@ public class Book {
     @Override
     public String toString() {
         return String.format("%s by %s [ISBN:%s] %d/%d copies",
-                title, author, isbn, availableCopies, totalCopies);
+                title, author != null ? author.getName() : "Unknown", isbn, availableCopies, totalCopies);
     }
 
     public Long getId() {

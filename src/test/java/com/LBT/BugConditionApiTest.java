@@ -4,8 +4,10 @@ import com.lbt.controllers.BookController;
 import com.lbt.controllers.BorrowController;
 import com.lbt.controllers.MemberController;
 import com.lbt.controllers.GlobalExceptionHandler;
+import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.entities.Member;
+import com.lbt.services.AuthorService;
 import com.lbt.services.BookService;
 import com.lbt.services.BorrowTransactionService;
 import com.lbt.services.MemberService;
@@ -22,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -55,6 +58,9 @@ class BugConditionApiTest {
 
     @MockitoBean
     private BookService bookService;
+
+    @MockitoBean
+    private AuthorService authorService;
 
     @Test
     @DisplayName("Test 5 — Bug 6: GET /api/v1/members and /api/v1/borrows should return 200")
@@ -118,20 +124,21 @@ class BugConditionApiTest {
         // Bug 9: BookController has no PUT endpoint
         // On unfixed code, returns 405 Method Not Allowed
 
+        Author mockAuthor = Author.builder().id(1L).name("Updated Author").build();
         Book mockBook = Book.builder()
                 .isbn("978-0-13-468599-1")
                 .title("Updated Title")
-                .author("Updated Author")
+                .author(mockAuthor)
                 .genre("Updated Genre")
                 .totalCopies(10)
                 .build();
-        when(bookService.updateBook(anyString(), anyString(), anyString(), anyString(), anyInt())).thenReturn(mockBook);
+        when(bookService.updateBook(anyString(), anyString(), anyLong(), anyString(), anyInt())).thenReturn(mockBook);
 
         String requestBody = """
                 {
                     "isbn": "978-0-13-468599-1",
                     "title": "Updated Title",
-                    "author": "Updated Author",
+                    "authorId": 1,
                     "genre": "Updated Genre",
                     "totalCopies": 10
                 }
