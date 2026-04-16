@@ -25,6 +25,9 @@ public class BookService {
 
     public void addBook(Book book) {
     	validationHandler.validate(book);
+    	if (bookRepository.existsByIsbn(book.getIsbn())) {
+    	    throw new IllegalArgumentException("ISBN already exists");
+    	}
     	bookRepository.save(book);
        
     }
