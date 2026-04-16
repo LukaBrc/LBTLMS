@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/books")
-@CrossOrigin(origins = "*") // remove or restrict in production
+@CrossOrigin(origins = "*")
 public class BookController {
 
     private final BookService bookService;
