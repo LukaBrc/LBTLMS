@@ -1,0 +1,6 @@
+target/
+.git/
+.gitignore
+.jqwik-database
+*.md
+LICENSE
