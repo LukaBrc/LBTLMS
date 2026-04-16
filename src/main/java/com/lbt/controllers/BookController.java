@@ -35,6 +35,7 @@ public class BookController {
                 .genre(request.getGenre())
                 .isbn(request.getIsbn())
                 .totalCopies(request.getTotalCopies())
+                .availableCopies(request.getTotalCopies())
                 .build();
 
         bookService.addBook(book);

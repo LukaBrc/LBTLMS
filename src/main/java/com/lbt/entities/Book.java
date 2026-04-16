@@ -41,11 +41,10 @@ public class Book {
     @Column(name = "available_copies", nullable = false)
     private int availableCopies;
 
-    public static class BookBuilder {
-        public BookBuilder totalCopies(int totalCopies) {
-            this.totalCopies = totalCopies;
-            this.availableCopies = totalCopies;
-            return this;
+    @PrePersist
+    private void defaultAvailableCopies() {
+        if (availableCopies == 0 && totalCopies > 0) {
+            availableCopies = totalCopies;
         }
     }
 
