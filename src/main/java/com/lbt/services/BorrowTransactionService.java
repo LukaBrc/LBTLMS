@@ -8,9 +8,12 @@ import com.lbt.entities.Member;
 import com.lbt.repositories.BookRepository;
 import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.repositories.MemberRepository;
+import com.lbt.validation.Validatable;
+import com.lbt.validation.ValidationError;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BorrowTransactionService {
@@ -40,6 +43,8 @@ public class BorrowTransactionService {
         tx.setBookIsbn(isbn);
         tx.setMemberId(memberId);
         tx.setBorrowDate(LocalDate.now());
+
+        validateEntity(tx, "BorrowTransaction");
 
         transactionRepository.save(tx);
         member.borrowBook(isbn);
@@ -74,5 +79,17 @@ public class BorrowTransactionService {
 
     public List<BorrowTransaction> getAllTransactions() {
         return transactionRepository.findAll();
+    }
+
+    private void validateEntity(Validatable entity, String entityName) {
+        if (entity == null) {
+            throw new IllegalArgumentException(entityName + " must not be null.");
+        }
+        if (!entity.isValid()) {
+            String message = entity.getValidationErrors().stream()
+                .map(ValidationError::message)
+                .collect(Collectors.joining("; "));
+            throw new IllegalArgumentException(message);
+        }
     }
 }

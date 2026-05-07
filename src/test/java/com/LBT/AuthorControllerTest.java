@@ -56,7 +56,7 @@ class AuthorControllerTest {
     void getAllAuthors_returns200WithList() throws Exception {
         Author a1 = Author.builder().id(1L).name("Author A").build();
         Author a2 = Author.builder().id(2L).name("Author B").build();
-        when(authorService.getAllAuthors()).thenReturn(List.of(a1, a2));
+        when(authorService.getAuthorsByName(null)).thenReturn(List.of(a1, a2));
 
         mockMvc.perform(get("/api/v1/authors"))
                 .andExpect(status().isOk())
@@ -130,5 +130,55 @@ class AuthorControllerTest {
 
         mockMvc.perform(delete("/api/v1/authors/999"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getAllAuthors_withNameParam_delegatesToGetAuthorsByName() throws Exception {
+        Author a1 = Author.builder().id(1L).name("Joshua Bloch").build();
+        when(authorService.getAuthorsByName("Josh")).thenReturn(List.of(a1));
+
+        mockMvc.perform(get("/api/v1/authors").param("name", "Josh"))
+                .andExpect(status().isOk());
+
+        verify(authorService).getAuthorsByName("Josh");
+    }
+
+    @Test
+    void getAllAuthors_withNameParam_returnsOnlyMatchingAuthors() throws Exception {
+        Author a1 = Author.builder().id(1L).name("Joshua Bloch").build();
+        Author a2 = Author.builder().id(3L).name("Josh Long").build();
+        when(authorService.getAuthorsByName("Josh")).thenReturn(List.of(a1, a2));
+
+        mockMvc.perform(get("/api/v1/authors").param("name", "Josh"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("Joshua Bloch"))
+                .andExpect(jsonPath("$[1].id").value(3))
+                .andExpect(jsonPath("$[1].name").value("Josh Long"));
+    }
+
+    @Test
+    void getAllAuthors_withNameParam_noMatches_returnsEmptyList() throws Exception {
+        when(authorService.getAuthorsByName("NonExistent")).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/authors").param("name", "NonExistent"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getAllAuthors_responseStructure_containsIdAndNameFields() throws Exception {
+        Author a1 = Author.builder().id(42L).name("Martin Fowler").build();
+        when(authorService.getAuthorsByName("Martin")).thenReturn(List.of(a1));
+
+        mockMvc.perform(get("/api/v1/authors").param("name", "Martin"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id").exists())
+                .andExpect(jsonPath("$[0].name").exists())
+                .andExpect(jsonPath("$[0].id").value(42))
+                .andExpect(jsonPath("$[0].name").value("Martin Fowler"));
     }
 }

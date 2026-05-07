@@ -1,64 +1,68 @@
 package com.lbt;
 
 import com.lbt.entities.Author;
-import com.lbt.services.ValidationHandler;
+import com.lbt.validation.ValidationError;
 
 import net.jqwik.api.*;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Property 2: Invalid name rejection
  *
- * For any null or whitespace-only string, ValidationHandler.validate(Author)
- * rejects with a descriptive error message.
+ * For any null or whitespace-only string, Author.getValidationErrors()
+ * reports a validation error for the "name" field.
  *
  * Validates: Requirements 3.2, 5.3
  */
 @Label("Feature: author-management, Property 2: Invalid name rejection")
 class InvalidNameRejectionPropertyTest {
 
-    private final ValidationHandler validationHandler = new ValidationHandler();
-
     /**
-     * A null name causes rejection with IllegalArgumentException.
+     * A null name causes a validation error for the "name" field.
      *
      * Validates: Requirements 3.2, 5.3
      */
     @Example
     @Tag("Feature: author-management, Property 2: Invalid name rejection")
-    @Label("Null name is rejected with IllegalArgumentException")
+    @Label("Null name is rejected with a validation error")
     void nullNameIsRejected() {
         Author author = Author.builder().name(null).build();
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> validationHandler.validate(author),
-                "Validation should reject null name"
-        );
-        assertNotNull(ex.getMessage(), "Exception should have a descriptive message");
-        assertFalse(ex.getMessage().isBlank(), "Exception message should not be blank");
+        assertFalse(author.isValid(), "Author with null name should be invalid");
+        List<ValidationError> errors = author.getValidationErrors();
+        assertFalse(errors.isEmpty(), "Should have at least one validation error");
+        assertTrue(errors.stream().anyMatch(e -> "name".equals(e.field())),
+                "Should have a validation error for the 'name' field");
+        assertTrue(errors.stream()
+                .filter(e -> "name".equals(e.field()))
+                .anyMatch(e -> e.message() != null && !e.message().isBlank()),
+                "Validation error should have a descriptive message");
     }
 
     /**
      * For any whitespace-only string (spaces, tabs, newlines, etc.),
-     * validation rejects with IllegalArgumentException.
+     * validation reports an error for the "name" field.
      *
      * Validates: Requirements 3.2, 5.3
      */
     @Property(tries = 100)
     @Tag("Feature: author-management, Property 2: Invalid name rejection")
-    @Label("Whitespace-only names are rejected with IllegalArgumentException")
+    @Label("Whitespace-only names are rejected with a validation error")
     void whitespaceOnlyNamesAreRejected(@ForAll("whitespaceOnlyStrings") String whitespaceName) {
         Author author = Author.builder().name(whitespaceName).build();
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> validationHandler.validate(author),
-                "Validation should reject whitespace-only name: [" + whitespaceName.replace("\n", "\\n").replace("\t", "\\t") + "]"
-        );
-        assertNotNull(ex.getMessage(), "Exception should have a descriptive message");
-        assertFalse(ex.getMessage().isBlank(), "Exception message should not be blank");
+        assertFalse(author.isValid(), "Author with whitespace-only name should be invalid");
+        List<ValidationError> errors = author.getValidationErrors();
+        assertFalse(errors.isEmpty(), "Should have at least one validation error");
+        assertTrue(errors.stream().anyMatch(e -> "name".equals(e.field())),
+                "Should have a validation error for the 'name' field");
+        assertTrue(errors.stream()
+                .filter(e -> "name".equals(e.field()))
+                .anyMatch(e -> e.message() != null && !e.message().isBlank()),
+                "Validation error should have a descriptive message");
     }
 
     @Provide

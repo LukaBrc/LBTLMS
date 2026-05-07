@@ -2,6 +2,7 @@ package com.lbt.services;
 
 import com.lbt.entities.Author;
 import com.lbt.repositories.AuthorRepository;
+import com.lbt.validation.ValidationError;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,17 +12,15 @@ public class AuthorService {
 
     private final AuthorRepository authorRepository;
     private final AuthorCache authorCache;
-    private final ValidationHandler validationHandler;
 
-    public AuthorService(AuthorRepository authorRepository, AuthorCache authorCache, ValidationHandler validationHandler) {
+    public AuthorService(AuthorRepository authorRepository, AuthorCache authorCache) {
         this.authorRepository = authorRepository;
         this.authorCache = authorCache;
-        this.validationHandler = validationHandler;
     }
 
     public Author createAuthor(String name) {
         Author author = Author.builder().name(name).build();
-        validationHandler.validate(author);
+        validateAuthor(author);
         Author saved = authorRepository.save(author);
         authorCache.put(saved);
         return saved;
@@ -29,6 +28,17 @@ public class AuthorService {
 
     public List<Author> getAllAuthors() {
         return authorCache.getAll();
+    }
+
+    public List<Author> getAuthorsByName(String name) {
+        List<Author> all = authorCache.getAll();
+        if (name == null || name.isBlank()) {
+            return all;
+        }
+        String lowerFilter = name.toLowerCase();
+        return all.stream()
+                .filter(a -> a.getName().toLowerCase().contains(lowerFilter))
+                .toList();
     }
 
     public Author getAuthorById(Long id) {
@@ -40,7 +50,7 @@ public class AuthorService {
         Author author = authorRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("Author not found with id: " + id));
         author.setName(name);
-        validationHandler.validate(author);
+        validateAuthor(author);
         Author saved = authorRepository.save(author);
         authorCache.put(saved);
         return saved;
@@ -52,5 +62,15 @@ public class AuthorService {
         author.setDeleted(true);
         authorRepository.save(author);
         authorCache.evict(id);
+    }
+
+    private void validateAuthor(Author author) {
+        if (author == null) {
+            throw new IllegalArgumentException("Author must not be null.");
+        }
+        List<ValidationError> errors = author.getValidationErrors();
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException(errors.get(0).message());
+        }
     }
 }

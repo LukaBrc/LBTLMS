@@ -4,14 +4,12 @@ import com.lbt.entities.Author;
 import com.lbt.repositories.AuthorRepository;
 import com.lbt.services.AuthorCache;
 import com.lbt.services.AuthorService;
-import com.lbt.services.ValidationHandler;
 
 import net.jqwik.api.*;
 import net.jqwik.api.constraints.LongRange;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,9 +42,8 @@ class SoftDeleteVisibilityPropertyTest {
         when(cache.getAll()).thenReturn(activeAuthors);
 
         AuthorRepository repo = mock(AuthorRepository.class);
-        ValidationHandler validationHandler = new ValidationHandler();
 
-        AuthorService service = new AuthorService(repo, cache, validationHandler);
+        AuthorService service = new AuthorService(repo, cache);
 
         List<Author> result = service.getAllAuthors();
 
@@ -67,9 +64,8 @@ class SoftDeleteVisibilityPropertyTest {
         when(cache.getById(nonExistentId)).thenReturn(Optional.empty());
 
         AuthorRepository repo = mock(AuthorRepository.class);
-        ValidationHandler validationHandler = new ValidationHandler();
 
-        AuthorService service = new AuthorService(repo, cache, validationHandler);
+        AuthorService service = new AuthorService(repo, cache);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> service.getAuthorById(nonExistentId),
@@ -89,9 +85,8 @@ class SoftDeleteVisibilityPropertyTest {
         when(repo.findByIdAndDeletedFalse(deletedAuthorId)).thenReturn(Optional.empty());
 
         AuthorCache cache = mock(AuthorCache.class);
-        ValidationHandler validationHandler = new ValidationHandler();
 
-        AuthorService service = new AuthorService(repo, cache, validationHandler);
+        AuthorService service = new AuthorService(repo, cache);
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.updateAuthor(deletedAuthorId, newName),
@@ -108,9 +103,8 @@ class SoftDeleteVisibilityPropertyTest {
         when(repo.findByIdAndDeletedFalse(deletedAuthorId)).thenReturn(Optional.empty());
 
         AuthorCache cache = mock(AuthorCache.class);
-        ValidationHandler validationHandler = new ValidationHandler();
 
-        AuthorService service = new AuthorService(repo, cache, validationHandler);
+        AuthorService service = new AuthorService(repo, cache);
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.deleteAuthor(deletedAuthorId),

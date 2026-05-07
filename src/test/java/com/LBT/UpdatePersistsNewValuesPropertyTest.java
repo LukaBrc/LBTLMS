@@ -4,7 +4,6 @@ import com.lbt.entities.Author;
 import com.lbt.repositories.AuthorRepository;
 import com.lbt.services.AuthorCache;
 import com.lbt.services.AuthorService;
-import com.lbt.services.ValidationHandler;
 
 import net.jqwik.api.*;
 
@@ -37,7 +36,6 @@ class UpdatePersistsNewValuesPropertyTest {
         // Set up mocks
         AuthorRepository repo = mock(AuthorRepository.class);
         AuthorCache cache = mock(AuthorCache.class);
-        ValidationHandler validationHandler = new ValidationHandler();
 
         // Create the existing author
         Author existingAuthor = Author.builder()
@@ -52,7 +50,7 @@ class UpdatePersistsNewValuesPropertyTest {
         // Mock save to return its argument (simulating persistence)
         when(repo.save(any(Author.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AuthorService authorService = new AuthorService(repo, cache, validationHandler);
+        AuthorService authorService = new AuthorService(repo, cache);
 
         // Act
         Author result = authorService.updateAuthor(originalId, newName);

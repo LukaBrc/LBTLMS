@@ -4,7 +4,6 @@ import com.lbt.entities.Author;
 import com.lbt.repositories.AuthorRepository;
 import com.lbt.services.AuthorCache;
 import com.lbt.services.AuthorService;
-import com.lbt.services.ValidationHandler;
 
 import net.jqwik.api.*;
 
@@ -13,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 
 /**
  * Property 3: Create author round-trip
@@ -33,7 +33,6 @@ class CreateAuthorRoundTripPropertyTest {
     void createAuthorRoundTrip(@ForAll("validAuthorNames") String name) {
         AuthorRepository repo = mock(AuthorRepository.class);
         AuthorCache cache = mock(AuthorCache.class);
-        ValidationHandler validationHandler = new ValidationHandler();
 
         when(repo.save(any(Author.class))).thenAnswer(invocation -> {
             Author a = invocation.getArgument(0);
@@ -41,7 +40,7 @@ class CreateAuthorRoundTripPropertyTest {
             return a;
         });
 
-        AuthorService authorService = new AuthorService(repo, cache, validationHandler);
+        AuthorService authorService = new AuthorService(repo, cache);
 
         Author result = authorService.createAuthor(name);
 

@@ -4,13 +4,15 @@ import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.repositories.BookRepository;
 import com.lbt.services.AuthorService;
+import com.lbt.services.BookCache;
 import com.lbt.services.BookService;
-import com.lbt.services.ValidationHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,10 +24,9 @@ class BookServiceTest {
     private BookRepository bookRepository;
 
     @Mock
-    private ValidationHandler validationHandler;
-
-    @Mock
     private AuthorService authorService;
+
+    private BookCache bookCache;
 
     private BookService bookService;
 
@@ -34,7 +35,11 @@ class BookServiceTest {
 
     @BeforeEach
     void setUp() {
-        bookService = new BookService(bookRepository, validationHandler, authorService);
+        BookRepository cacheRepo = mock(BookRepository.class);
+        when(cacheRepo.findAll()).thenReturn(Collections.emptyList());
+        bookCache = new BookCache(cacheRepo);
+        bookCache.init();
+        bookService = new BookService(bookRepository, authorService, bookCache);
         sampleAuthor = Author.builder().id(1L).name("Joshua Bloch").build();
         sampleBook = Book.builder()
                 .isbn("978-0-13-468599-1")
@@ -48,9 +53,24 @@ class BookServiceTest {
 
     @Test
     void addBook_savesBookAfterValidation() {
+        when(bookRepository.save(sampleBook)).thenReturn(sampleBook);
         bookService.addBook(sampleBook);
-        verify(validationHandler).validate(sampleBook);
         verify(bookRepository).save(sampleBook);
+    }
+
+    @Test
+    void addBook_throwsWhenBookIsNull() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                bookService.addBook(null));
+        assertEquals("Book must not be null.", ex.getMessage());
+    }
+
+    @Test
+    void addBook_throwsWhenTitleIsBlank() {
+        sampleBook.setTitle("   ");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                bookService.addBook(sampleBook));
+        assertEquals("Book title must not be empty.", ex.getMessage());
     }
 
     @Test
@@ -66,7 +86,6 @@ class BookServiceTest {
         assertEquals("New Title", sampleBook.getTitle());
         assertEquals(newAuthor, sampleBook.getAuthor());
         assertEquals("New Genre", sampleBook.getGenre());
-        verify(validationHandler).validate(sampleBook);
         verify(bookRepository).save(sampleBook);
     }
 

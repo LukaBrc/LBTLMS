@@ -1,5 +1,7 @@
 package com.lbt.entities;
 
+import com.lbt.validation.Validatable;
+import com.lbt.validation.ValidationError;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +17,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @Table(name = "members")
-public class Member {
+public class Member implements Validatable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,6 +54,27 @@ public class Member {
     public void setBorrowedIsbns(List<String> isbns) {
         borrowedIsbns.clear();
         borrowedIsbns.addAll(isbns);
+    }
+
+    @Override
+    public List<ValidationError> getValidationErrors() {
+        List<ValidationError> errors = new ArrayList<>();
+        if (name == null || name.trim().isEmpty()) {
+            errors.add(new ValidationError("name", "Member name must not be empty."));
+        } else if (name.length() > 150) {
+            errors.add(new ValidationError("name", "Member name must not exceed 150 characters."));
+        }
+        if (memberId == null || memberId.trim().isEmpty()) {
+            errors.add(new ValidationError("memberId", "Member ID must not be empty."));
+        } else if (memberId.length() > 50) {
+            errors.add(new ValidationError("memberId", "Member ID must not exceed 50 characters."));
+        }
+        if (contact == null || contact.trim().isEmpty()) {
+            errors.add(new ValidationError("contact", "Member contact must not be empty."));
+        } else if (contact.length() > 200) {
+            errors.add(new ValidationError("contact", "Member contact must not exceed 200 characters."));
+        }
+        return errors;
     }
 
     @Override

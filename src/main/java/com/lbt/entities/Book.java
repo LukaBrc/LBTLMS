@@ -1,5 +1,7 @@
 package com.lbt.entities;
 
+import com.lbt.validation.Validatable;
+import com.lbt.validation.ValidationError;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -16,7 +20,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "books")
-public class Book {
+public class Book implements Validatable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,6 +67,21 @@ public class Book {
 
     public void returnCopy() {
         if (availableCopies < totalCopies) availableCopies++;
+    }
+
+    @Override
+    public List<ValidationError> getValidationErrors() {
+        List<ValidationError> errors = new ArrayList<>();
+        if (title == null || title.trim().isEmpty()) {
+            errors.add(new ValidationError("title", "Book title must not be empty."));
+        }
+        if (author == null) {
+            errors.add(new ValidationError("author", "Book author must not be null."));
+        }
+        if (isbn == null || isbn.trim().isEmpty()) {
+            errors.add(new ValidationError("isbn", "Book ISBN must not be empty."));
+        }
+        return errors;
     }
 
     @Override

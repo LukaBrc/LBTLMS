@@ -1,30 +1,30 @@
 package com.lbt;
 
 import com.lbt.entities.Author;
-import com.lbt.services.ValidationHandler;
+import com.lbt.validation.ValidationError;
 
 import net.jqwik.api.*;
 import net.jqwik.api.constraints.IntRange;
 import net.jqwik.api.constraints.StringLength;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Property 1: Name length validation
  *
- * For any string > 150 chars, ValidationHandler.validate(Author) rejects;
- * for any non-blank string ≤ 150 chars, it accepts.
+ * For any string > 150 chars, Author.getValidationErrors() reports a "name" error;
+ * for any non-blank string ≤ 150 chars, it returns no errors.
  *
  * Validates: Requirements 1.2
  */
 @Label("Feature: author-management, Property 1: Name length validation")
 class AuthorNameLengthValidationPropertyTest {
 
-    private final ValidationHandler validationHandler = new ValidationHandler();
-
     /**
-     * For any string longer than 150 characters, validation must reject
-     * with an IllegalArgumentException.
+     * For any string longer than 150 characters, validation must report
+     * a validation error for the "name" field.
      *
      * Validates: Requirements 1.2
      */
@@ -34,17 +34,15 @@ class AuthorNameLengthValidationPropertyTest {
     void namesLongerThan150AreRejected(@ForAll("stringsOver150") String longName) {
         Author author = Author.builder().name(longName).build();
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> validationHandler.validate(author),
-                "Validation should reject names longer than 150 characters"
-        );
-        assertNotNull(ex.getMessage(), "Exception should have a descriptive message");
+        assertFalse(author.isValid(), "Author with name > 150 chars should be invalid");
+        List<ValidationError> errors = author.getValidationErrors();
+        assertTrue(errors.stream().anyMatch(e -> "name".equals(e.field())),
+                "Should have a validation error for the 'name' field");
     }
 
     /**
      * For any non-blank string of length ≤ 150 characters, validation must accept
-     * (no exception thrown).
+     * (no validation errors).
      *
      * Validates: Requirements 1.2
      */
@@ -54,10 +52,9 @@ class AuthorNameLengthValidationPropertyTest {
     void nonBlankNamesUpTo150AreAccepted(@ForAll("nonBlankStringsUpTo150") String validName) {
         Author author = Author.builder().name(validName).build();
 
-        assertDoesNotThrow(
-                () -> validationHandler.validate(author),
-                "Validation should accept non-blank names of 150 characters or fewer"
-        );
+        assertTrue(author.isValid(), "Author with valid name should be valid");
+        assertTrue(author.getValidationErrors().isEmpty(),
+                "Valid author should have no validation errors");
     }
 
     @Provide

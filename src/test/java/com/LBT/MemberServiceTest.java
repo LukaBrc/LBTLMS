@@ -3,6 +3,7 @@ package com.lbt;
 import com.lbt.entities.Member;
 import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.repositories.MemberRepository;
+import com.lbt.services.MemberCache;
 import com.lbt.services.MemberService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,9 @@ class MemberServiceTest {
     @Mock
     private BorrowTransactionRepository transactionRepository;
 
+    @Mock
+    private MemberCache memberCache;
+
     @InjectMocks
     private MemberService memberService;
 
@@ -39,8 +43,10 @@ class MemberServiceTest {
     @Test
     void registerMember_savesNewMember() {
         when(memberRepository.existsByMemberId("M001")).thenReturn(false);
+        when(memberRepository.save(any(Member.class))).thenReturn(sampleMember);
         memberService.registerMember("Alice", "M001", "alice@test.com");
         verify(memberRepository).save(any(Member.class));
+        verify(memberCache).put(any(Member.class));
     }
 
     @Test

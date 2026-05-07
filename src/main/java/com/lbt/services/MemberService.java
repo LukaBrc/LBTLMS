@@ -5,39 +5,47 @@ import org.springframework.stereotype.Service;
 import com.lbt.entities.Member;
 import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.repositories.MemberRepository;
+import com.lbt.validation.Validatable;
+import com.lbt.validation.ValidationError;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MemberService {
 
     private final MemberRepository memberRepository;
     private final BorrowTransactionRepository transactionRepository;
+    private final MemberCache memberCache;
 
     public MemberService(MemberRepository memberRepository,
-                         BorrowTransactionRepository transactionRepository) {
+                         BorrowTransactionRepository transactionRepository,
+                         MemberCache memberCache) {
         this.memberRepository = memberRepository;
         this.transactionRepository = transactionRepository;
+        this.memberCache = memberCache;
     }
 
     public void registerMember(String name, String memberId, String contact) {
-        if (name == null || memberId == null || contact == null) {
-            throw new IllegalArgumentException("Name, ID and contact are required");
-        }
-        if (memberRepository.existsByMemberId(memberId)) {
-            throw new IllegalArgumentException("Member ID " + memberId + " is already registered");
-        }
-
         Member member = new Member();
         member.setMemberId(memberId);
         member.setName(name);
         member.setContact(contact);
 
-        memberRepository.save(member);
+        validateEntity(member, "Member");
+
+        if (memberRepository.existsByMemberId(memberId)) {
+            throw new IllegalArgumentException("Member ID " + memberId + " is already registered");
+        }
+
+        Member savedMember = memberRepository.save(member);
+        memberCache.put(savedMember);
     }
 
     public Member findById(String memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Optional<Member> optionalMember = memberCache.getById(memberId);
+        Member member = optionalMember.orElse(null);
         if (member != null) {
             List<String> activeIsbns = transactionRepository.findActiveBookIsbnsByMemberId(memberId);
             member.setBorrowedIsbns(activeIsbns);
@@ -46,7 +54,7 @@ public class MemberService {
     }
 
     public List<Member> getAllMembers() {
-        List<Member> members = memberRepository.findAll();
+        List<Member> members = memberCache.getAll();
         for (Member m : members) {
             List<String> activeIsbns = transactionRepository.findActiveBookIsbnsByMemberId(m.getMemberId());
             m.setBorrowedIsbns(activeIsbns);
@@ -61,7 +69,10 @@ public class MemberService {
         }
         member.setName(name);
         member.setContact(contact);
-        return memberRepository.save(member);
+        validateEntity(member, "Member");
+        Member savedMember = memberRepository.save(member);
+        memberCache.put(savedMember);
+        return savedMember;
     }
 
     public void deleteMember(String memberId) {
@@ -70,5 +81,18 @@ public class MemberService {
             throw new IllegalArgumentException("Member not found: " + memberId);
         }
         memberRepository.delete(member);
+        memberCache.evict(memberId);
+    }
+
+    private void validateEntity(Validatable entity, String entityName) {
+        if (entity == null) {
+            throw new IllegalArgumentException(entityName + " must not be null.");
+        }
+        if (!entity.isValid()) {
+            String message = entity.getValidationErrors().stream()
+                .map(ValidationError::message)
+                .collect(Collectors.joining("; "));
+            throw new IllegalArgumentException(message);
+        }
     }
 }

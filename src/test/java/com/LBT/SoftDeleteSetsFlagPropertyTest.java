@@ -4,7 +4,6 @@ import com.lbt.entities.Author;
 import com.lbt.repositories.AuthorRepository;
 import com.lbt.services.AuthorCache;
 import com.lbt.services.AuthorService;
-import com.lbt.services.ValidationHandler;
 
 import net.jqwik.api.*;
 
@@ -38,7 +37,6 @@ class SoftDeleteSetsFlagPropertyTest {
         // Set up mocks
         AuthorRepository repo = mock(AuthorRepository.class);
         AuthorCache cache = mock(AuthorCache.class);
-        ValidationHandler validationHandler = new ValidationHandler();
 
         // Create the existing non-deleted author
         Author existingAuthor = Author.builder()
@@ -54,7 +52,7 @@ class SoftDeleteSetsFlagPropertyTest {
         ArgumentCaptor<Author> captor = ArgumentCaptor.forClass(Author.class);
         when(repo.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AuthorService authorService = new AuthorService(repo, cache, validationHandler);
+        AuthorService authorService = new AuthorService(repo, cache);
 
         // Act
         authorService.deleteAuthor(authorId);
