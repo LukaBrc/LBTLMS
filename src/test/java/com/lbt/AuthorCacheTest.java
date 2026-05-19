@@ -17,7 +17,6 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for AuthorCache.
- * Validates: Requirements 7.1, 7.8
  */
 class AuthorCacheTest {
 
@@ -30,8 +29,6 @@ class AuthorCacheTest {
         when(authorRepository.findByDeletedFalse()).thenReturn(Collections.emptyList());
         authorCache = new AuthorCache(authorRepository);
     }
-
-    // --- init() tests (Requirement 7.1) ---
 
     @Test
     @DisplayName("init() loads all active authors from findByDeletedFalse into the cache")

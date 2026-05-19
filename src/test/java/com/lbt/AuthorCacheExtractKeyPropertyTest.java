@@ -40,21 +40,15 @@ class AuthorCacheExtractKeyPropertyTest {
     void extractKeyReturnsAuthorId(@ForAll("authorsWithNonNullId") Author author) {
         Long expectedKey = author.getId();
 
-        // Use put + getById to verify extractKey behavior indirectly
-        // Since extractKey is protected, we verify it through the cache's public API:
-        // put(author) uses extractKey internally, and getById(expectedKey) should find it.
         authorCache.put(author);
 
         assertTrue(authorCache.getById(expectedKey).isPresent(),
-                "getById(author.getId()) should find the author after put — confirms extractKey returns getId()");
+                "getById(author.getId()) should find the author after put  confirms extractKey returns getId()");
         assertEquals(author, authorCache.getById(expectedKey).get(),
                 "The retrieved author should be the same instance that was put");
 
-        // Clean up for next iteration
         authorCache.evict(expectedKey);
     }
-
-    // --- Generator ---
 
     @Provide
     Arbitrary<Author> authorsWithNonNullId() {
