@@ -1,4 +1,4 @@
 target/
 .jqwik-database
 .env
-.idea
+.idea/*
