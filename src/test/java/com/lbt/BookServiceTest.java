@@ -90,6 +90,20 @@ class BookServiceTest {
     }
 
     @Test
+    void updateBook_preservesBorrowedCountWhenTotalCopiesChanges() {
+        Author newAuthor = Author.builder().id(2L).name("New Author").build();
+        sampleBook.setAvailableCopies(2); // 3 borrowed from totalCopies=5
+        when(bookRepository.findByIsbn("978-0-13-468599-1")).thenReturn(sampleBook);
+        when(bookRepository.save(any(Book.class))).thenReturn(sampleBook);
+        when(authorService.getAuthorById(2L)).thenReturn(newAuthor);
+
+        bookService.updateBook("978-0-13-468599-1", "New Title", 2L, "New Genre", 10);
+
+        assertEquals(10, sampleBook.getTotalCopies());
+        assertEquals(7, sampleBook.getAvailableCopies());
+    }
+
+    @Test
     void updateBook_throwsWhenBookNotFound() {
         when(bookRepository.findByIsbn("UNKNOWN")).thenReturn(null);
         assertThrows(IllegalArgumentException.class, () ->

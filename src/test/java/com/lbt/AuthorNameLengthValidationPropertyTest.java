@@ -11,26 +11,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Property 1: Name length validation
- *
- * For any string > 150 chars, Author.getValidationErrors() reports a "name" error;
- * for any non-blank string ≤ 150 chars, it returns no errors.
- *
- * Validates: Requirements 1.2
- */
-@Label("Feature: author-management, Property 1: Name length validation")
 class AuthorNameLengthValidationPropertyTest {
 
-    /**
-     * For any string longer than 150 characters, validation must report
-     * a validation error for the "name" field.
-     *
-     * Validates: Requirements 1.2
-     */
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 1: Name length validation")
-    @Label("Names longer than 150 characters are rejected")
+    @Tag("feature-author-management-property-1-name-length-validation")
     void namesLongerThan150AreRejected(@ForAll("stringsOver150") String longName) {
         Author author = Author.builder().name(longName).build();
 
@@ -40,15 +24,8 @@ class AuthorNameLengthValidationPropertyTest {
                 "Should have a validation error for the 'name' field");
     }
 
-    /**
-     * For any non-blank string of length ≤ 150 characters, validation must accept
-     * (no validation errors).
-     *
-     * Validates: Requirements 1.2
-     */
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 1: Name length validation")
-    @Label("Non-blank names of 150 characters or fewer are accepted")
+    @Tag("feature-author-management-property-1-name-length-validation")
     void nonBlankNamesUpTo150AreAccepted(@ForAll("nonBlankStringsUpTo150") String validName) {
         Author author = Author.builder().name(validName).build();
 

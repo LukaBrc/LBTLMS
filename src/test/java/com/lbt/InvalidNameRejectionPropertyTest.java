@@ -9,25 +9,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Property 2: Invalid name rejection
- *
- * For any null or whitespace-only string, Author.getValidationErrors()
- * reports a validation error for the "name" field.
- *
- * Validates: Requirements 3.2, 5.3
- */
-@Label("Feature: author-management, Property 2: Invalid name rejection")
 class InvalidNameRejectionPropertyTest {
 
-    /**
-     * A null name causes a validation error for the "name" field.
-     *
-     * Validates: Requirements 3.2, 5.3
-     */
     @Example
-    @Tag("Feature: author-management, Property 2: Invalid name rejection")
-    @Label("Null name is rejected with a validation error")
+    @Tag("feature-author-management-property-2-invalid-name-rejection")
     void nullNameIsRejected() {
         Author author = Author.builder().name(null).build();
 
@@ -42,15 +27,8 @@ class InvalidNameRejectionPropertyTest {
                 "Validation error should have a descriptive message");
     }
 
-    /**
-     * For any whitespace-only string (spaces, tabs, newlines, etc.),
-     * validation reports an error for the "name" field.
-     *
-     * Validates: Requirements 3.2, 5.3
-     */
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 2: Invalid name rejection")
-    @Label("Whitespace-only names are rejected with a validation error")
+    @Tag("feature-author-management-property-2-invalid-name-rejection")
     void whitespaceOnlyNamesAreRejected(@ForAll("whitespaceOnlyStrings") String whitespaceName) {
         Author author = Author.builder().name(whitespaceName).build();
 

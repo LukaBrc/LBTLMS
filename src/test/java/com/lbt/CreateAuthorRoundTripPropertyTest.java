@@ -14,22 +14,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
-/**
- * Property 3: Create author round-trip
- *
- * For any valid author name, calling createAuthor(name) returns an Author entity
- * whose name equals the input name, whose id is non-null, and whose deleted flag is false.
- *
- * **Validates: Requirements 3.1**
- */
-@Label("Feature: author-management, Property 3: Create author round-trip")
 class CreateAuthorRoundTripPropertyTest {
 
     private final AtomicLong idCounter = new AtomicLong(1L);
 
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 3: Create author round-trip")
-    @Label("createAuthor returns Author with matching name, non-null id, and deleted == false")
+    @Tag("feature-author-management-property-3-create-author-round-trip")
     void createAuthorRoundTrip(@ForAll("validAuthorNames") String name) {
         AuthorRepository repo = mock(AuthorRepository.class);
         AuthorCache cache = mock(AuthorCache.class);

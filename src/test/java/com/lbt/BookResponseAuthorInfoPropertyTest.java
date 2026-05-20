@@ -8,20 +8,8 @@ import net.jqwik.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Property 9: BookResponse includes author info
- *
- * For any Book entity with an associated Author, mapping to a BookResponse DTO
- * produces a DTO whose authorId and authorName match the author's id and name.
- *
- * Validates: Requirements 2.4
- */
-@Label("Feature: author-management, Property 9: BookResponse includes author info")
 class BookResponseAuthorInfoPropertyTest {
 
-    /**
-     * Replicates the same mapping logic as BookController.toResponse().
-     */
     private BookResponse toResponse(Book book) {
         BookResponse r = new BookResponse();
         r.setIsbn(book.getIsbn());
@@ -34,16 +22,8 @@ class BookResponseAuthorInfoPropertyTest {
         return r;
     }
 
-    /**
-     * For any Book with a random associated Author, mapping to BookResponse
-     * produces a DTO whose authorId matches the author's id and authorName
-     * matches the author's name.
-     *
-     * Validates: Requirements 2.4
-     */
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 9: BookResponse includes author info")
-    @Label("Mapped BookResponse authorId and authorName match the associated Author")
+    @Tag("feature-author-management-property-9-bookresponse-author-info")
     void mappedBookResponseContainsCorrectAuthorInfo(
             @ForAll("randomBooksWithAuthors") Book book
     ) {

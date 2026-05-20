@@ -9,19 +9,8 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Property-based tests for AbstractEntityCache using a concrete TestStringCache subclass.
- *
- * Validates: Requirements 2.2, 2.4, 3.2, 3.3, 4.1, 4.2
- */
-@Label("Feature: entity-cache-abstraction, Properties 1-5: AbstractEntityCache correctness")
 class AbstractEntityCachePropertyTest {
 
-    /**
-     * Concrete test subclass that caches String entities keyed by String.
-     * The key is the string itself (identity function).
-     * loadAll() behavior is controllable via the entities field and shouldThrow flag.
-     */
     static class TestStringCache extends AbstractEntityCache<String, String> {
 
         List<String> entities = Collections.emptyList();
@@ -52,7 +41,6 @@ class AbstractEntityCachePropertyTest {
     }
 
     @Property(tries = 200)
-    @Label("Property 1: Refresh produces an exact snapshot of loadAll")
     void refreshProducesExactSnapshotOfLoadAll(@ForAll("distinctStringLists") List<String> entities) {
         cache.entities = entities;
         cache.shouldThrow = false;
@@ -77,7 +65,6 @@ class AbstractEntityCachePropertyTest {
     }
 
     @Property(tries = 200)
-    @Label("Property 2: Failed refresh retains stale data")
     void failedRefreshRetainsStaleData(@ForAll("distinctStringLists") List<String> initialEntities) {
         cache.entities = initialEntities;
         cache.shouldThrow = false;
@@ -96,7 +83,6 @@ class AbstractEntityCachePropertyTest {
     }
 
     @Property(tries = 200)
-    @Label("Property 3: Snapshots are unmodifiable — getAll list does not affect cache")
     void snapshotsAreUnmodifiable(@ForAll("distinctStringLists") List<String> entities) {
         cache.entities = entities;
         cache.shouldThrow = false;
@@ -110,7 +96,6 @@ class AbstractEntityCachePropertyTest {
     }
 
     @Property(tries = 200)
-    @Label("Property 3: Snapshots are unmodifiable — put on internal map throws")
     void internalMapRejectsMutation(@ForAll("distinctStringLists") List<String> entities,
                                     @ForAll("nonBlankStrings") String extraEntity) {
         cache.entities = entities;
@@ -128,7 +113,6 @@ class AbstractEntityCachePropertyTest {
     }
 
     @Property(tries = 200)
-    @Label("Property 4: Put adds entity retrievable by key")
     void putAddsEntityRetrievableByKey(@ForAll("distinctStringLists") List<String> initialEntities,
                                        @ForAll("nonBlankStrings") String newEntity) {
         cache.entities = initialEntities;
@@ -148,7 +132,6 @@ class AbstractEntityCachePropertyTest {
     }
 
     @Property(tries = 200)
-    @Label("Property 5: Evict removes entity by key")
     void evictRemovesEntityByKey(@ForAll("nonEmptyDistinctStringLists") List<String> initialEntities) {
         cache.entities = initialEntities;
         cache.shouldThrow = false;

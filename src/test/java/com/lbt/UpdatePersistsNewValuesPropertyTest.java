@@ -13,49 +13,32 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Property 5: Update persists new values
- *
- * For any existing non-deleted author and any valid new name,
- * calling updateAuthor(id, newName) returns an author entity whose
- * name equals the new name and whose id is unchanged.
- *
- * **Validates: Requirements 5.1**
- */
-@Label("Feature: author-management, Property 5: Update persists new values")
 class UpdatePersistsNewValuesPropertyTest {
 
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 5: Update persists new values")
-    @Label("updateAuthor returns author with new name and unchanged id")
+    @Tag("feature-author-management-property-5-update-persists-new-values")
     void updateAuthorPersistsNewValues(
             @ForAll("existingAuthorIds") Long originalId,
             @ForAll("validAuthorNames") String originalName,
             @ForAll("validAuthorNames") String newName) {
 
-        // Set up mocks
         AuthorRepository repo = mock(AuthorRepository.class);
         AuthorCache cache = mock(AuthorCache.class);
 
-        // Create the existing author
         Author existingAuthor = Author.builder()
                 .id(originalId)
                 .name(originalName)
                 .deleted(false)
                 .build();
 
-        // Mock findByIdAndDeletedFalse to return the existing author
         when(repo.findByIdAndDeletedFalse(originalId)).thenReturn(Optional.of(existingAuthor));
 
-        // Mock save to return its argument (simulating persistence)
         when(repo.save(any(Author.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         AuthorService authorService = new AuthorService(repo, cache);
 
-        // Act
         Author result = authorService.updateAuthor(originalId, newName);
 
-        // Assert
         assertEquals(newName, result.getName(), "Returned author's name should equal the new name");
         assertEquals(originalId, result.getId(), "Returned author's id should be unchanged");
     }

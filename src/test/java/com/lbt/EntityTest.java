@@ -13,7 +13,6 @@ class EntityTest {
         return Author.builder().id(1L).name("A").build();
     }
 
-    // --- Book.borrowCopy() ---
 
     @Test
     void borrowCopy_decrementsAvailableCopies() {
@@ -29,7 +28,6 @@ class EntityTest {
         assertEquals(0, book.getAvailableCopies());
     }
 
-    // --- Book.returnCopy() ---
 
     @Test
     void returnCopy_incrementsAvailableCopies() {
@@ -45,7 +43,22 @@ class EntityTest {
         assertEquals(3, book.getAvailableCopies());
     }
 
-    // --- Member.canBorrow() ---
+    @Test
+    void setTotalCopies_preservesBorrowedCount() {
+        Book book = Book.builder().isbn("ISBN-1").title("T").author(sampleAuthor()).genre("G").totalCopies(5).availableCopies(2).build();
+        book.setTotalCopies(10);
+        assertEquals(10, book.getTotalCopies());
+        assertEquals(7, book.getAvailableCopies());
+    }
+
+    @Test
+    void setTotalCopies_clampsAvailableToZeroWhenBorrowedExceedsNewTotal() {
+        Book book = Book.builder().isbn("ISBN-1").title("T").author(sampleAuthor()).genre("G").totalCopies(5).availableCopies(1).build();
+        book.setTotalCopies(2);
+        assertEquals(2, book.getTotalCopies());
+        assertEquals(0, book.getAvailableCopies());
+    }
+
 
     @Test
     void canBorrow_returnsTrueWhenUnderLimit() {
@@ -68,7 +81,6 @@ class EntityTest {
         assertFalse(member.canBorrow());
     }
 
-    // --- Member.borrowBook() ---
 
     @Test
     void borrowBook_addsIsbnToList() {
@@ -81,17 +93,16 @@ class EntityTest {
     }
 
     @Test
-    void borrowBook_doesNotAddDuplicateIsbn() {
+    void borrowBook_allowsDuplicateIsbnForMultipleCopies() {
         Member member = new Member();
         member.setMemberId("M001");
         member.setName("Alice");
         member.setContact("alice@test.com");
         member.borrowBook("ISBN-1");
         member.borrowBook("ISBN-1");
-        assertEquals(1, member.getBorrowedIsbns().size());
+        assertEquals(2, member.getBorrowedIsbns().size());
     }
 
-    // --- Member.returnBook() ---
 
     @Test
     void returnBook_removesIsbnFromList() {
@@ -102,6 +113,21 @@ class EntityTest {
         member.borrowBook("ISBN-1");
         member.returnBook("ISBN-1");
         assertFalse(member.getBorrowedIsbns().contains("ISBN-1"));
+    }
+
+    @Test
+    void returnBook_removesOnlyOneCopyWhenDuplicatesExist() {
+        Member member = new Member();
+        member.setMemberId("M001");
+        member.setName("Alice");
+        member.setContact("alice@test.com");
+        member.borrowBook("ISBN-1");
+        member.borrowBook("ISBN-1");
+
+        member.returnBook("ISBN-1");
+
+        assertEquals(1, member.getBorrowedIsbns().size());
+        assertTrue(member.getBorrowedIsbns().contains("ISBN-1"));
     }
 
     @Test

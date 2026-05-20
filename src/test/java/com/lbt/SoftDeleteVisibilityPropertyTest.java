@@ -15,29 +15,15 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Property 4: Soft-delete visibility invariant
- *
- * For any set of authors with varying deleted flags, the service's read operations
- * return exactly the authors where deleted is false — no active author is omitted,
- * no deleted or non-existent author is included. Attempting to read, update, or delete
- * a soft-deleted or non-existent author signals not-found.
- *
- * **Validates: Requirements 4.1, 4.2, 4.3, 5.2, 6.2, 6.3**
- */
-@Label("Feature: author-management, Property 4: Soft-delete visibility invariant")
 class SoftDeleteVisibilityPropertyTest {
 
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 4: Soft-delete visibility invariant")
-    @Label("getAllAuthors returns exactly the active (non-deleted) authors from cache")
+    @Tag("feature-author-management-property-4-soft-delete-visibility-invariant")
     void getAllAuthorsReturnsOnlyActiveAuthors(@ForAll("authorLists") List<Author> allAuthors) {
-        // Separate active vs deleted
         List<Author> activeAuthors = allAuthors.stream()
                 .filter(a -> !a.isDeleted())
                 .collect(Collectors.toList());
 
-        // Build a cache mock that returns only active authors (as the real cache does)
         AuthorCache cache = mock(AuthorCache.class);
         when(cache.getAll()).thenReturn(activeAuthors);
 
@@ -47,7 +33,6 @@ class SoftDeleteVisibilityPropertyTest {
 
         List<Author> result = service.getAllAuthors();
 
-        // Result should contain exactly the active authors
         assertEquals(activeAuthors.size(), result.size(),
                 "getAllAuthors should return exactly the number of active authors");
         assertTrue(result.containsAll(activeAuthors),
@@ -57,8 +42,7 @@ class SoftDeleteVisibilityPropertyTest {
     }
 
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 4: Soft-delete visibility invariant")
-    @Label("getAuthorById throws IllegalArgumentException for non-existent id")
+    @Tag("feature-author-management-property-4-soft-delete-visibility-invariant")
     void getAuthorByIdThrowsForNonExistentId(@ForAll @LongRange(min = 1, max = 100000) Long nonExistentId) {
         AuthorCache cache = mock(AuthorCache.class);
         when(cache.getById(nonExistentId)).thenReturn(Optional.empty());
@@ -75,12 +59,10 @@ class SoftDeleteVisibilityPropertyTest {
     }
 
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 4: Soft-delete visibility invariant")
-    @Label("updateAuthor throws IllegalArgumentException for soft-deleted author")
+    @Tag("feature-author-management-property-4-soft-delete-visibility-invariant")
     void updateAuthorThrowsForSoftDeletedAuthor(
             @ForAll @LongRange(min = 1, max = 100000) Long deletedAuthorId,
             @ForAll("validNames") String newName) {
-        // Repository returns empty for soft-deleted author
         AuthorRepository repo = mock(AuthorRepository.class);
         when(repo.findByIdAndDeletedFalse(deletedAuthorId)).thenReturn(Optional.empty());
 
@@ -94,11 +76,9 @@ class SoftDeleteVisibilityPropertyTest {
     }
 
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 4: Soft-delete visibility invariant")
-    @Label("deleteAuthor throws IllegalArgumentException for soft-deleted author")
+    @Tag("feature-author-management-property-4-soft-delete-visibility-invariant")
     void deleteAuthorThrowsForSoftDeletedAuthor(
             @ForAll @LongRange(min = 1, max = 100000) Long deletedAuthorId) {
-        // Repository returns empty for soft-deleted author
         AuthorRepository repo = mock(AuthorRepository.class);
         when(repo.findByIdAndDeletedFalse(deletedAuthorId)).thenReturn(Optional.empty());
 

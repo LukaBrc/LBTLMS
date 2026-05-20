@@ -7,14 +7,18 @@ import com.lbt.entities.Member;
 import com.lbt.repositories.BookRepository;
 import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.repositories.MemberRepository;
+import com.lbt.services.BookCache;
 import com.lbt.services.BorrowTransactionService;
+import com.lbt.validation.ValidationHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,6 +35,12 @@ class BorrowTransactionServiceTest {
 
     @Mock
     private BorrowTransactionRepository transactionRepository;
+
+    @Mock
+    private BookCache bookCache;
+
+    @Spy
+    private ValidationHandler validationHandler = new ValidationHandler();
 
     @InjectMocks
     private BorrowTransactionService borrowService;
@@ -61,6 +71,7 @@ class BorrowTransactionServiceTest {
     void borrowBook_successfulBorrow() {
         when(bookRepository.findByIsbn("ISBN-1")).thenReturn(sampleBook);
         when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
+        when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         boolean result = borrowService.borrowBook("ISBN-1", "M001");
 
@@ -68,6 +79,7 @@ class BorrowTransactionServiceTest {
         assertEquals(2, sampleBook.getAvailableCopies());
         verify(transactionRepository).save(any(BorrowTransaction.class));
         verify(bookRepository).save(sampleBook);
+        verify(bookCache).put(sampleBook);
     }
 
     @Test
@@ -118,8 +130,9 @@ class BorrowTransactionServiceTest {
 
         when(bookRepository.findByIsbn("ISBN-1")).thenReturn(sampleBook);
         when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
-        when(transactionRepository.findByBookIsbnAndMemberIdAndReturnDateIsNull("ISBN-1", "M001"))
-                .thenReturn(Optional.of(tx));
+        when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(transactionRepository.findByBookIsbnAndMemberIdAndReturnDateIsNullOrderByBorrowDateAscIdAsc("ISBN-1", "M001"))
+                .thenReturn(List.of(tx));
 
         boolean result = borrowService.returnBook("ISBN-1", "M001");
 
@@ -127,15 +140,49 @@ class BorrowTransactionServiceTest {
         assertEquals(3, sampleBook.getAvailableCopies());
         assertNotNull(tx.getReturnDate());
         verify(transactionRepository).save(tx);
+        verify(bookCache).put(sampleBook);
     }
 
     @Test
     void returnBook_returnsFalseWhenNoActiveTransaction() {
         when(bookRepository.findByIsbn("ISBN-1")).thenReturn(sampleBook);
         when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
-        when(transactionRepository.findByBookIsbnAndMemberIdAndReturnDateIsNull("ISBN-1", "M001"))
-                .thenReturn(Optional.empty());
+        when(transactionRepository.findByBookIsbnAndMemberIdAndReturnDateIsNullOrderByBorrowDateAscIdAsc("ISBN-1", "M001"))
+                .thenReturn(List.of());
 
         assertFalse(borrowService.returnBook("ISBN-1", "M001"));
+    }
+
+    @Test
+    void returnBook_withDuplicateActiveBorrows_returnsOneCopy() {
+        BorrowTransaction oldest = new BorrowTransaction();
+        oldest.setBookIsbn("ISBN-1");
+        oldest.setMemberId("M001");
+        oldest.setBorrowDate(java.time.LocalDate.now().minusDays(2));
+
+        BorrowTransaction newest = new BorrowTransaction();
+        newest.setBookIsbn("ISBN-1");
+        newest.setMemberId("M001");
+        newest.setBorrowDate(java.time.LocalDate.now().minusDays(1));
+
+        sampleBook = Book.builder()
+                .isbn("ISBN-1").title("T").author(sampleAuthor).genre("G")
+                .totalCopies(3).availableCopies(1).build();
+        sampleMember.borrowBook("ISBN-1");
+
+        when(bookRepository.findByIsbn("ISBN-1")).thenReturn(sampleBook);
+        when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
+        when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(transactionRepository.findByBookIsbnAndMemberIdAndReturnDateIsNullOrderByBorrowDateAscIdAsc("ISBN-1", "M001"))
+                .thenReturn(List.of(oldest, newest));
+
+        boolean result = borrowService.returnBook("ISBN-1", "M001");
+
+        assertTrue(result);
+        assertEquals(2, sampleBook.getAvailableCopies());
+        assertNotNull(oldest.getReturnDate());
+        assertNull(newest.getReturnDate());
+        verify(transactionRepository).save(oldest);
+        verify(bookCache).put(sampleBook);
     }
 }

@@ -1,5 +1,7 @@
 package com.lbt.services.cache;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +10,7 @@ import java.util.*;
 
 /**
  * Generic abstract cache base class that provides thread-safe caching
- * with atomic reference swap and copy-on-write semantics.
+ * backed by Caffeine with atomic snapshot replacement on init/refresh.
  *
  * @param <T> the entity type
  * @param <K> the cache key type
@@ -17,7 +19,7 @@ public abstract class AbstractEntityCache<T, K> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private volatile Map<K, T> cache = Collections.emptyMap();
+    private volatile Cache<K, T> cache = Caffeine.newBuilder().build();
 
     /**
      * Loads all entities from the underlying data source.
@@ -40,12 +42,7 @@ public abstract class AbstractEntityCache<T, K> {
      */
     @PostConstruct
     public void init() {
-        List<T> entities = loadAll();
-        Map<K, T> newSnapshot = new HashMap<>(entities.size());
-        for (T entity : entities) {
-            newSnapshot.put(extractKey(entity), entity);
-        }
-        this.cache = Collections.unmodifiableMap(newSnapshot);
+        this.cache = buildSnapshot(loadAll());
     }
 
     /**
@@ -54,12 +51,7 @@ public abstract class AbstractEntityCache<T, K> {
      */
     public void refresh() {
         try {
-            List<T> entities = loadAll();
-            Map<K, T> newSnapshot = new HashMap<>(entities.size());
-            for (T entity : entities) {
-                newSnapshot.put(extractKey(entity), entity);
-            }
-            this.cache = Collections.unmodifiableMap(newSnapshot);
+            this.cache = buildSnapshot(loadAll());
         } catch (Exception e) {
             logger.warn("Cache refresh failed, retaining stale data", e);
         }
@@ -71,7 +63,7 @@ public abstract class AbstractEntityCache<T, K> {
      * @return list of all cached entities
      */
     public List<T> getAll() {
-        return new ArrayList<>(cache.values());
+        return new ArrayList<>(cache.asMap().values());
     }
 
     /**
@@ -81,29 +73,33 @@ public abstract class AbstractEntityCache<T, K> {
      * @return an Optional containing the entity, or empty if not found
      */
     public Optional<T> getById(K key) {
-        return Optional.ofNullable(cache.get(key));
+        return Optional.ofNullable(cache.getIfPresent(key));
     }
 
     /**
-     * Adds or updates an entity in the cache using copy-on-write semantics.
+     * Adds or updates an entity in the cache.
      *
      * @param entity the entity to add or update
      */
     public void put(T entity) {
-        Map<K, T> newSnapshot = new HashMap<>(cache);
-        newSnapshot.put(extractKey(entity), entity);
-        this.cache = Collections.unmodifiableMap(newSnapshot);
+        cache.put(extractKey(entity), entity);
     }
 
     /**
-     * Removes an entity from the cache by key using copy-on-write semantics.
+     * Removes an entity from the cache by key.
      * If the key is not present, completes without throwing an exception.
      *
      * @param key the key of the entity to remove
      */
     public void evict(K key) {
-        Map<K, T> newSnapshot = new HashMap<>(cache);
-        newSnapshot.remove(key);
-        this.cache = Collections.unmodifiableMap(newSnapshot);
+        cache.invalidate(key);
+    }
+
+    private Cache<K, T> buildSnapshot(List<T> entities) {
+        Cache<K, T> newSnapshot = Caffeine.newBuilder().build();
+        for (T entity : entities) {
+            newSnapshot.put(extractKey(entity), entity);
+        }
+        return newSnapshot;
     }
 }

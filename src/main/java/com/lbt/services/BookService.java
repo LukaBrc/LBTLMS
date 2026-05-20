@@ -1,10 +1,13 @@
 package com.lbt.services;
 
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.repositories.BookRepository;
+import com.lbt.validation.ValidationHandler;
+import com.lbt.validation.ValidationHandlerResolver;
 import com.lbt.validation.ValidationError;
 
 import java.util.List;
@@ -18,17 +21,28 @@ public class BookService {
 
     private final BookCache bookCache;
 
+    private final ValidationHandler validationHandler;
+
     public BookService(BookRepository bookRepository, AuthorService authorService, BookCache bookCache) {
+        this(bookRepository, authorService, bookCache, ValidationHandlerResolver.get());
+    }
+
+    @Autowired
+    public BookService(BookRepository bookRepository,
+                       AuthorService authorService,
+                       BookCache bookCache,
+                       ValidationHandler validationHandler) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.bookCache = bookCache;
+        this.validationHandler = validationHandler;
     }
 
     private void validateBook(Book book) {
         if (book == null) {
             throw new IllegalArgumentException("Book must not be null.");
         }
-        List<ValidationError> errors = book.getValidationErrors();
+        List<ValidationError> errors = validationHandler.getValidationErrors(book);
         if (!errors.isEmpty()) {
             throw new IllegalArgumentException(errors.get(0).message());
         }

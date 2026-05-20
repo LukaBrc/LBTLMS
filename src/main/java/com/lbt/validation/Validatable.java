@@ -3,10 +3,11 @@ package com.lbt.validation;
 import java.util.List;
 
 public interface Validatable {
-
     default boolean isValid() {
-        return getValidationErrors().isEmpty();
+        return ValidationHandlerResolver.get().isValid(this);
     }
 
-    List<ValidationError> getValidationErrors();
+    default List<ValidationError> getValidationErrors() {
+        return ValidationHandlerResolver.get().getValidationErrors(this);
+    }
 }

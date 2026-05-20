@@ -1,15 +1,12 @@
 package com.lbt.entities;
 
 import com.lbt.validation.Validatable;
-import com.lbt.validation.ValidationError;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -43,24 +40,6 @@ public class BorrowTransaction implements Validatable {
         this.dueDate = (borrowDate != null) ? borrowDate.plusDays(14) : null;
     }
 
-    @Override
-    public List<ValidationError> getValidationErrors() {
-        List<ValidationError> errors = new ArrayList<>();
-        if (bookIsbn == null || bookIsbn.trim().isEmpty()) {
-            errors.add(new ValidationError("bookIsbn", "Book ISBN must not be empty."));
-        } else if (bookIsbn.length() > 50) {
-            errors.add(new ValidationError("bookIsbn", "Book ISBN must not exceed 50 characters."));
-        }
-        if (memberId == null || memberId.trim().isEmpty()) {
-            errors.add(new ValidationError("memberId", "Member ID must not be empty."));
-        } else if (memberId.length() > 50) {
-            errors.add(new ValidationError("memberId", "Member ID must not exceed 50 characters."));
-        }
-        if (borrowDate == null) {
-            errors.add(new ValidationError("borrowDate", "Borrow date must not be null."));
-        }
-        return errors;
-    }
 
     public boolean isActive() {
         return returnDate == null;

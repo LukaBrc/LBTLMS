@@ -11,12 +11,6 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Property-based test for AuthorCache.extractKey consistency.
- *
- * Validates: Requirements 5.3
- */
-@Label("Feature: entity-cache-abstraction, Property 7: AuthorCache extractKey consistency")
 class AuthorCacheExtractKeyPropertyTest {
 
     private final AuthorCache authorCache;
@@ -27,16 +21,7 @@ class AuthorCacheExtractKeyPropertyTest {
         this.authorCache = new AuthorCache(mockRepository);
     }
 
-    /**
-     * Property 7: ExtractKey consistency — AuthorCache.extractKey(author) == author.getId()
-     *
-     * For any Author entity with a non-null id, AuthorCache.extractKey(author)
-     * should return author.getId().
-     *
-     * Validates: Requirements 5.3
-     */
     @Property(tries = 200)
-    @Label("Property 7: AuthorCache.extractKey(author) == author.getId()")
     void extractKeyReturnsAuthorId(@ForAll("authorsWithNonNullId") Author author) {
         Long expectedKey = author.getId();
 

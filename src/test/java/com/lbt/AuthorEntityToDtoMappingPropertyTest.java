@@ -7,21 +7,8 @@ import net.jqwik.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Property 8: Author entity-to-DTO mapping
- *
- * For any Author entity, mapping it to an AuthorResponse DTO produces a DTO
- * whose id and name fields exactly match the entity's id and name.
- *
- * Validates: Requirements 8.2, 8.3
- */
-@Label("Feature: author-management, Property 8: Author entity-to-DTO mapping")
 class AuthorEntityToDtoMappingPropertyTest {
 
-    /**
-     * Helper that performs the same mapping the controller will use:
-     * Author entity -> AuthorResponse DTO.
-     */
     private AuthorResponse mapToResponse(Author author) {
         AuthorResponse r = new AuthorResponse();
         r.setId(author.getId());
@@ -29,16 +16,8 @@ class AuthorEntityToDtoMappingPropertyTest {
         return r;
     }
 
-    /**
-     * For any Author entity with a random id and random non-blank name,
-     * mapping to AuthorResponse produces a DTO whose id and name exactly
-     * match the entity.
-     *
-     * Validates: Requirements 8.2, 8.3
-     */
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 8: Author entity-to-DTO mapping")
-    @Label("Mapped AuthorResponse id and name match the Author entity")
+    @Tag("feature-author-management-property-8-author-entity-to-dto-mapping")
     void mappedDtoMatchesEntity(
             @ForAll("randomAuthors") Author author
     ) {

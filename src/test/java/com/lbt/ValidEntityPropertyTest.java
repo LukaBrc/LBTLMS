@@ -11,27 +11,10 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Feature: entity-validation-abstraction, Property 4: Valid entities produce no validation errors
-/**
- * Property 4: Valid entities produce no validation errors
- *
- * For any entity implementing Validatable where all required fields are non-null,
- * non-blank, and within their maximum length constraints, isValid() shall return true
- * and getValidationErrors() shall return an empty list.
- *
- * Validates: Requirements 2.6, 3.4, 4.9, 5.8
- */
-@Label("Feature: entity-validation-abstraction, Property 4: Valid entities produce no validation errors")
 class ValidEntityPropertyTest {
 
-    /**
-     * A valid Author (non-blank name, length <= 150) produces no validation errors.
-     *
-     * Validates: Requirements 3.4
-     */
     @Property(tries = 100)
-    @Tag("Feature: entity-validation-abstraction, Property 4: Valid entities produce no validation errors")
-    @Label("Valid Author produces no validation errors")
+    @Tag("feature-entity-validation-abstraction-property-4-valid-entities-no-validation-errors")
     void validAuthorProducesNoErrors(@ForAll("validAuthorNames") String name) {
         Author author = Author.builder().name(name).build();
 
@@ -40,15 +23,8 @@ class ValidEntityPropertyTest {
                 "Valid Author should have no validation errors");
     }
 
-    /**
-     * A valid Book (non-blank title, non-null author with valid name, non-blank isbn)
-     * produces no validation errors.
-     *
-     * Validates: Requirements 2.6
-     */
     @Property(tries = 100)
-    @Tag("Feature: entity-validation-abstraction, Property 4: Valid entities produce no validation errors")
-    @Label("Valid Book produces no validation errors")
+    @Tag("feature-entity-validation-abstraction-property-4-valid-entities-no-validation-errors")
     void validBookProducesNoErrors(
             @ForAll("validBookTitles") String title,
             @ForAll("validAuthorNames") String authorName,
@@ -66,15 +42,8 @@ class ValidEntityPropertyTest {
                 "Valid Book should have no validation errors");
     }
 
-    /**
-     * A valid Member (non-blank name <= 150, non-blank memberId <= 50, non-blank contact <= 200)
-     * produces no validation errors.
-     *
-     * Validates: Requirements 4.9
-     */
     @Property(tries = 100)
-    @Tag("Feature: entity-validation-abstraction, Property 4: Valid entities produce no validation errors")
-    @Label("Valid Member produces no validation errors")
+    @Tag("feature-entity-validation-abstraction-property-4-valid-entities-no-validation-errors")
     void validMemberProducesNoErrors(
             @ForAll("validMemberNames") String name,
             @ForAll("validMemberIds") String memberId,
@@ -90,15 +59,8 @@ class ValidEntityPropertyTest {
                 "Valid Member should have no validation errors");
     }
 
-    /**
-     * A valid BorrowTransaction (non-blank bookIsbn <= 50, non-blank memberId <= 50, non-null borrowDate)
-     * produces no validation errors.
-     *
-     * Validates: Requirements 5.8
-     */
     @Property(tries = 100)
-    @Tag("Feature: entity-validation-abstraction, Property 4: Valid entities produce no validation errors")
-    @Label("Valid BorrowTransaction produces no validation errors")
+    @Tag("feature-entity-validation-abstraction-property-4-valid-entities-no-validation-errors")
     void validBorrowTransactionProducesNoErrors(
             @ForAll("validIsbns") String bookIsbn,
             @ForAll("validMemberIds") String memberId,
@@ -114,7 +76,6 @@ class ValidEntityPropertyTest {
                 "Valid BorrowTransaction should have no validation errors");
     }
 
-    // --- Generators ---
 
     @Provide
     Arbitrary<String> validAuthorNames() {

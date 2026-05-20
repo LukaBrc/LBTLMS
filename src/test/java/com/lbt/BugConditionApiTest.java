@@ -30,21 +30,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * Bug Condition Exploration Tests — API endpoint layer (Tests 5-8).
- *
- * Uses @WebMvcTest with mocked services to test controller routing bugs
- * without loading the full Spring context (avoids Bug 5 blocking).
- *
- * These tests encode the EXPECTED (correct) behavior.
- * On UNFIXED code, they are EXPECTED TO FAIL — failure confirms the bugs exist.
- *
- * Validates: Requirements 1.6, 1.7, 1.8, 1.9
- */
 @WebMvcTest({MemberController.class, BorrowController.class,
              BookController.class, GlobalExceptionHandler.class})
 @ActiveProfiles("test")
-@DisplayName("Bug Condition Exploration — API Endpoints")
+@DisplayName("Bug Condition Exploration Ã¢â‚¬â€ API Endpoints")
 class BugConditionApiTest {
 
     @Autowired
@@ -63,11 +52,8 @@ class BugConditionApiTest {
     private AuthorService authorService;
 
     @Test
-    @DisplayName("Test 5 — Bug 6: GET /api/v1/members and /api/v1/borrows should return 200")
+    @DisplayName("Test 5 Ã¢â‚¬â€ Bug 6: GET /api/v1/members and /api/v1/borrows should return 200")
     void consistentApiVersioning() throws Exception {
-        // Validates: Requirements 1.6
-        // Bug 6: MemberController uses /api/members, BorrowController uses /api/borrows
-        // instead of /api/v1/members and /api/v1/borrows
 
         when(memberService.getAllMembers()).thenReturn(List.of());
         when(borrowTransactionService.getOverdueBooks()).thenReturn(List.of());
@@ -80,11 +66,8 @@ class BugConditionApiTest {
     }
 
     @Test
-    @DisplayName("Test 6 — Bug 7: PUT /api/v1/members/{memberId} should return 200")
+    @DisplayName("Test 6 Ã¢â‚¬â€ Bug 7: PUT /api/v1/members/{memberId} should return 200")
     void memberControllerPutEndpoint() throws Exception {
-        // Validates: Requirements 1.7
-        // Bug 7: MemberController has no PUT endpoint
-        // On unfixed code, returns 405 Method Not Allowed
 
         Member mockMember = new Member();
         mockMember.setMemberId("M001");
@@ -107,22 +90,16 @@ class BugConditionApiTest {
     }
 
     @Test
-    @DisplayName("Test 7 — Bug 8: DELETE /api/v1/members/{memberId} should return 204")
+    @DisplayName("Test 7 Ã¢â‚¬â€ Bug 8: DELETE /api/v1/members/{memberId} should return 204")
     void memberControllerDeleteEndpoint() throws Exception {
-        // Validates: Requirements 1.8
-        // Bug 8: MemberController has no DELETE endpoint
-        // On unfixed code, returns 405 Method Not Allowed
 
         mockMvc.perform(delete("/api/v1/members/M001"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    @DisplayName("Test 8 — Bug 9: PUT /api/v1/books/{isbn} should return 200")
+    @DisplayName("Test 8 Ã¢â‚¬â€ Bug 9: PUT /api/v1/books/{isbn} should return 200")
     void bookControllerPutEndpoint() throws Exception {
-        // Validates: Requirements 1.9
-        // Bug 9: BookController has no PUT endpoint
-        // On unfixed code, returns 405 Method Not Allowed
 
         Author mockAuthor = Author.builder().id(1L).name("Updated Author").build();
         Book mockBook = Book.builder()

@@ -10,16 +10,8 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for AbstractEntityCache.
- * Validates: Requirements 4.3, 3.3
- */
 class AbstractEntityCacheTest {
 
-    /**
-     * Concrete test subclass that caches String entities keyed by String.
-     * The key is the string itself (identity function).
-     */
     static class TestStringCache extends AbstractEntityCache<String, String> {
 
         List<String> entities = Collections.emptyList();
@@ -88,7 +80,7 @@ class AbstractEntityCacheTest {
     }
 
     @Test
-    @DisplayName("put() overwrites value for existing key — verified with distinguishable entities")
+    @DisplayName("put() overwrites value for existing key Ã¢â‚¬â€ verified with distinguishable entities")
     void putOverwritesValueForExistingKeyDistinguishable() {
         AbstractEntityCache<String[], String> keyedCache = new AbstractEntityCache<>() {
             @Override

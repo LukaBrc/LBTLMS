@@ -12,26 +12,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Feature: entity-validation-abstraction, Property 2: Blank required fields produce validation errors
-/**
- * Property 2: Blank required fields produce validation errors
- *
- * For any entity implementing Validatable and for any required string field on that entity,
- * if the field value is null or composed entirely of whitespace characters, then
- * getValidationErrors() shall contain a ValidationError whose field property matches that field's name.
- *
- * Validates: Requirements 2.2, 2.4, 3.2, 4.2, 4.3, 4.4, 5.2, 5.3
- */
-@Label("Feature: entity-validation-abstraction, Property 2: Blank required fields produce validation errors")
 class BlankFieldDetectionPropertyTest {
 
-    // --- Book: title (null/blank) ---
 
-    /**
-     * Validates: Requirements 2.2
-     */
     @Property(tries = 100)
-    @Label("Book with blank/null title produces validation error for 'title'")
     void bookBlankTitleProducesError(@ForAll("blankOrNullStrings") String blankTitle) {
         Book book = Book.builder()
                 .title(blankTitle)
@@ -47,13 +31,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- Book: isbn (null/blank) ---
 
-    /**
-     * Validates: Requirements 2.4
-     */
     @Property(tries = 100)
-    @Label("Book with blank/null isbn produces validation error for 'isbn'")
     void bookBlankIsbnProducesError(@ForAll("blankOrNullStrings") String blankIsbn) {
         Book book = Book.builder()
                 .title("Valid Title")
@@ -69,13 +48,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- Book: author (null) ---
 
-    /**
-     * Validates: Requirements 2.2
-     */
     @Property(tries = 100)
-    @Label("Book with null author produces validation error for 'author'")
     void bookNullAuthorProducesError(@ForAll("validNonBlankStrings") String title,
                                      @ForAll("validNonBlankStrings") String isbn) {
         Book book = Book.builder()
@@ -92,13 +66,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- Author: name (null/blank) ---
 
-    /**
-     * Validates: Requirements 3.2
-     */
     @Property(tries = 100)
-    @Label("Author with blank/null name produces validation error for 'name'")
     void authorBlankNameProducesError(@ForAll("blankOrNullStrings") String blankName) {
         Author author = Author.builder()
                 .name(blankName)
@@ -112,13 +81,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- Member: name (null/blank) ---
 
-    /**
-     * Validates: Requirements 4.2
-     */
     @Property(tries = 100)
-    @Label("Member with blank/null name produces validation error for 'name'")
     void memberBlankNameProducesError(@ForAll("blankOrNullStrings") String blankName) {
         Member member = new Member();
         member.setName(blankName);
@@ -133,13 +97,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- Member: memberId (null/blank) ---
 
-    /**
-     * Validates: Requirements 4.3
-     */
     @Property(tries = 100)
-    @Label("Member with blank/null memberId produces validation error for 'memberId'")
     void memberBlankMemberIdProducesError(@ForAll("blankOrNullStrings") String blankMemberId) {
         Member member = new Member();
         member.setName("Valid Name");
@@ -154,13 +113,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- Member: contact (null/blank) ---
 
-    /**
-     * Validates: Requirements 4.4
-     */
     @Property(tries = 100)
-    @Label("Member with blank/null contact produces validation error for 'contact'")
     void memberBlankContactProducesError(@ForAll("blankOrNullStrings") String blankContact) {
         Member member = new Member();
         member.setName("Valid Name");
@@ -175,13 +129,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- BorrowTransaction: bookIsbn (null/blank) ---
 
-    /**
-     * Validates: Requirements 5.2
-     */
     @Property(tries = 100)
-    @Label("BorrowTransaction with blank/null bookIsbn produces validation error for 'bookIsbn'")
     void borrowTransactionBlankBookIsbnProducesError(@ForAll("blankOrNullStrings") String blankBookIsbn) {
         BorrowTransaction tx = new BorrowTransaction();
         tx.setBookIsbn(blankBookIsbn);
@@ -196,13 +145,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- BorrowTransaction: memberId (null/blank) ---
 
-    /**
-     * Validates: Requirements 5.3
-     */
     @Property(tries = 100)
-    @Label("BorrowTransaction with blank/null memberId produces validation error for 'memberId'")
     void borrowTransactionBlankMemberIdProducesError(@ForAll("blankOrNullStrings") String blankMemberId) {
         BorrowTransaction tx = new BorrowTransaction();
         tx.setBookIsbn("978-0-13-468599-1");
@@ -217,13 +161,8 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- BorrowTransaction: borrowDate (null) ---
 
-    /**
-     * Validates: Requirements 5.2
-     */
     @Property(tries = 100)
-    @Label("BorrowTransaction with null borrowDate produces validation error for 'borrowDate'")
     void borrowTransactionNullBorrowDateProducesError(@ForAll("validNonBlankStrings") String bookIsbn,
                                                       @ForAll("validNonBlankStrings") String memberId) {
         BorrowTransaction tx = new BorrowTransaction();
@@ -239,7 +178,6 @@ class BlankFieldDetectionPropertyTest {
         );
     }
 
-    // --- Generators ---
 
     @Provide
     Arbitrary<String> blankOrNullStrings() {

@@ -2,7 +2,10 @@ package com.lbt.services;
 
 import com.lbt.entities.Author;
 import com.lbt.repositories.AuthorRepository;
+import com.lbt.validation.ValidationHandler;
+import com.lbt.validation.ValidationHandlerResolver;
 import com.lbt.validation.ValidationError;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,10 +15,17 @@ public class AuthorService {
 
     private final AuthorRepository authorRepository;
     private final AuthorCache authorCache;
+    private final ValidationHandler validationHandler;
 
     public AuthorService(AuthorRepository authorRepository, AuthorCache authorCache) {
+        this(authorRepository, authorCache, ValidationHandlerResolver.get());
+    }
+
+    @Autowired
+    public AuthorService(AuthorRepository authorRepository, AuthorCache authorCache, ValidationHandler validationHandler) {
         this.authorRepository = authorRepository;
         this.authorCache = authorCache;
+        this.validationHandler = validationHandler;
     }
 
     public Author createAuthor(String name) {
@@ -68,7 +78,7 @@ public class AuthorService {
         if (author == null) {
             throw new IllegalArgumentException("Author must not be null.");
         }
-        List<ValidationError> errors = author.getValidationErrors();
+        List<ValidationError> errors = validationHandler.getValidationErrors(author);
         if (!errors.isEmpty()) {
             throw new IllegalArgumentException(errors.get(0).message());
         }

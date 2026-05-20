@@ -92,7 +92,7 @@ class BookControllerTest {
     @Test
     void putBook_returns200WithUpdatedBook() throws Exception {
         Author author = Author.builder().id(2L).name("New A").build();
-        Book updated = Book.builder().isbn("978-1").title("New").author(author).genre("New G").totalCopies(10).availableCopies(10).build();
+        Book updated = Book.builder().isbn("978-1").title("New").author(author).genre("New G").totalCopies(10).availableCopies(7).build();
         when(bookService.updateBook(eq("978-1"), eq("New"), eq(2L), eq("New G"), eq(10))).thenReturn(updated);
 
         mockMvc.perform(put("/api/v1/books/978-1")
@@ -101,7 +101,8 @@ class BookControllerTest {
                             {"title":"New","authorId":2,"isbn":"978-1","genre":"New G","totalCopies":10}
                             """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("New"));
+                .andExpect(jsonPath("$.title").value("New"))
+                .andExpect(jsonPath("$.availableCopies").value(7));
     }
 
     @Test

@@ -13,15 +13,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Property 7: Cache reflects writes immediately
- *
- * For any sequence of create/update/soft-delete operations, the AuthorCache
- * reflects each change immediately after the operation completes.
- *
- * Validates: Requirements 7.7
- */
-@Label("Feature: author-management, Property 7: Cache reflects writes immediately")
 class CacheReflectsWritesPropertyTest {
 
     private AuthorCache createEmptyCache() {
@@ -32,14 +23,8 @@ class CacheReflectsWritesPropertyTest {
         return cache;
     }
 
-    /**
-     * After put(), the author is immediately visible via getById() and present in getAll().
-     *
-     * Validates: Requirements 7.7
-     */
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 7: Cache reflects writes immediately")
-    @Label("After put, author is immediately visible via getById and getAll")
+    @Tag("feature-author-management-property-7-cache-reflects-writes-immediately")
     void afterPutAuthorIsImmediatelyVisible(
             @ForAll("authorIds") Long id,
             @ForAll("authorNames") String name) {
@@ -49,38 +34,28 @@ class CacheReflectsWritesPropertyTest {
         Author author = Author.builder().id(id).name(name).deleted(false).build();
         cache.put(author);
 
-        // getById must return the author immediately
         Optional<Author> found = cache.getById(id);
         assertTrue(found.isPresent(), "Author should be present in cache after put()");
         assertEquals(name, found.get().getName(), "Cached author name should match");
         assertEquals(id, found.get().getId(), "Cached author id should match");
 
-        // getAll must contain the author
         List<Author> all = cache.getAll();
         assertTrue(all.stream().anyMatch(a -> a.getId().equals(id) && a.getName().equals(name)),
                 "getAll() should contain the author after put()");
     }
 
-    /**
-     * After evict(), the author is immediately absent from getById() and getAll().
-     *
-     * Validates: Requirements 7.7
-     */
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 7: Cache reflects writes immediately")
-    @Label("After evict, author is immediately absent from getById and getAll")
+    @Tag("feature-author-management-property-7-cache-reflects-writes-immediately")
     void afterEvictAuthorIsImmediatelyAbsent(
             @ForAll("authorIds") Long id,
             @ForAll("authorNames") String name) {
 
         AuthorCache cache = createEmptyCache();
 
-        // First put the author in the cache
         Author author = Author.builder().id(id).name(name).deleted(false).build();
         cache.put(author);
         assertTrue(cache.getById(id).isPresent(), "Precondition: author should be in cache");
 
-        // Evict and verify immediate absence
         cache.evict(id);
 
         Optional<Author> found = cache.getById(id);
@@ -91,14 +66,8 @@ class CacheReflectsWritesPropertyTest {
                 "getAll() should not contain the author after evict()");
     }
 
-    /**
-     * After put() with an updated name, getById() returns the updated author.
-     *
-     * Validates: Requirements 7.7
-     */
     @Property(tries = 100)
-    @Tag("Feature: author-management, Property 7: Cache reflects writes immediately")
-    @Label("After put with updated name, getById returns updated author")
+    @Tag("feature-author-management-property-7-cache-reflects-writes-immediately")
     void afterPutWithUpdatedNameCacheReflectsUpdate(
             @ForAll("authorIds") Long id,
             @ForAll("authorNames") String originalName,
@@ -106,15 +75,12 @@ class CacheReflectsWritesPropertyTest {
 
         AuthorCache cache = createEmptyCache();
 
-        // Put original author
         Author original = Author.builder().id(id).name(originalName).deleted(false).build();
         cache.put(original);
 
-        // Update with new name via put
         Author updated = Author.builder().id(id).name(updatedName).deleted(false).build();
         cache.put(updated);
 
-        // getById must return the updated author
         Optional<Author> found = cache.getById(id);
         assertTrue(found.isPresent(), "Author should be present after update put()");
         assertEquals(updatedName, found.get().getName(),

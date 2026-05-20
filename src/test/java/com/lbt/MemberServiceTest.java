@@ -5,11 +5,13 @@ import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.repositories.MemberRepository;
 import com.lbt.services.MemberCache;
 import com.lbt.services.MemberService;
+import com.lbt.validation.ValidationHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +28,9 @@ class MemberServiceTest {
 
     @Mock
     private MemberCache memberCache;
+
+    @Spy
+    private ValidationHandler validationHandler = new ValidationHandler();
 
     @InjectMocks
     private MemberService memberService;

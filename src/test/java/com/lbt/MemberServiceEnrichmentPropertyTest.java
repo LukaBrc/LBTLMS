@@ -16,17 +16,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Property-based test for MemberService enrichment from transaction repository.
- *
- * Property 9: For any member retrieved via findById(memberId) or getAllMembers(),
- * the returned member's borrowedIsbns list SHALL equal the active ISBNs from
- * BorrowTransactionRepository for that member — not the cached entity's stale
- * borrowedIsbns field.
- *
- * Validates: Requirements 9.1, 9.2
- */
-@Label("Feature: entity-cache-abstraction, Property 9: MemberService enrichment from transaction repository")
 class MemberServiceEnrichmentPropertyTest {
 
     private MemberRepository memberRepository;
@@ -39,7 +28,6 @@ class MemberServiceEnrichmentPropertyTest {
         memberRepository = mock(MemberRepository.class);
         transactionRepository = mock(BorrowTransactionRepository.class);
 
-        // Use a real MemberCache backed by a mocked MemberRepository for loadAll
         MemberRepository cacheRepository = mock(MemberRepository.class);
         when(cacheRepository.findAll()).thenReturn(Collections.emptyList());
         memberCache = new MemberCache(cacheRepository);
@@ -48,76 +36,46 @@ class MemberServiceEnrichmentPropertyTest {
         memberService = new MemberService(memberRepository, transactionRepository, memberCache);
     }
 
-    /**
-     * Property 9: findById enriches member with active ISBNs from transaction repository.
-     *
-     * For any member in the cache with stale borrowedIsbns, when findById is called,
-     * the returned member's borrowedIsbns SHALL equal the active ISBNs from
-     * BorrowTransactionRepository — not the cached stale values.
-     *
-     * Validates: Requirements 9.2
-     */
     @Property(tries = 100)
-    @Label("Property 9: findById enriches member with active ISBNs from transaction repository")
     void findByIdEnrichesMemberWithActiveIsbns(
             @ForAll("validMembers") Member member,
             @ForAll("isbnLists") List<String> staleIsbns,
             @ForAll("isbnLists") List<String> activeIsbns) {
 
-        // Setup: put member in cache with stale borrowedIsbns
         member.setBorrowedIsbns(staleIsbns);
         memberCache.put(member);
 
-        // Mock transaction repository to return different active ISBNs
         when(transactionRepository.findActiveBookIsbnsByMemberId(member.getMemberId()))
                 .thenReturn(activeIsbns);
 
-        // Act
         Member result = memberService.findById(member.getMemberId());
 
-        // Assert: returned member has ISBNs from transaction repo, not stale cache
         assertNotNull(result, "findById should return the member from cache");
         assertEquals(activeIsbns, result.getBorrowedIsbns(),
                 "borrowedIsbns should equal active ISBNs from transaction repository, not stale cached values");
 
-        // Cleanup for next iteration
         memberCache.evict(member.getMemberId());
     }
 
-    /**
-     * Property 9: getAllMembers enriches each member with active ISBNs from transaction repository.
-     *
-     * For any set of members in the cache, when getAllMembers is called,
-     * each returned member's borrowedIsbns SHALL equal the active ISBNs from
-     * BorrowTransactionRepository for that member.
-     *
-     * Validates: Requirements 9.1
-     */
     @Property(tries = 100)
-    @Label("Property 9: getAllMembers enriches each member with active ISBNs from transaction repository")
     void getAllMembersEnrichesEachMemberWithActiveIsbns(
             @ForAll("validMemberLists") List<Member> members,
             @ForAll("isbnLists") List<String> staleIsbns) {
 
-        // Setup: put each member in cache with stale borrowedIsbns
-        // and configure transaction repo to return unique active ISBNs per member
         List<List<String>> expectedIsbnsByMember = new ArrayList<>();
         for (int i = 0; i < members.size(); i++) {
             Member member = members.get(i);
             member.setBorrowedIsbns(staleIsbns);
             memberCache.put(member);
 
-            // Each member gets a distinct active ISBN list based on their index
             List<String> activeIsbns = List.of("ISBN-ACTIVE-" + member.getMemberId());
             expectedIsbnsByMember.add(activeIsbns);
             when(transactionRepository.findActiveBookIsbnsByMemberId(member.getMemberId()))
                     .thenReturn(activeIsbns);
         }
 
-        // Act
         List<Member> result = memberService.getAllMembers();
 
-        // Assert: each returned member has ISBNs from transaction repo
         assertEquals(members.size(), result.size(),
                 "getAllMembers should return all cached members");
 
@@ -128,13 +86,11 @@ class MemberServiceEnrichmentPropertyTest {
                     "Member " + memberId + " borrowedIsbns should equal active ISBNs from transaction repository");
         }
 
-        // Cleanup for next iteration
         for (Member member : members) {
             memberCache.evict(member.getMemberId());
         }
     }
 
-    // --- Generators ---
 
     @Provide
     Arbitrary<Member> validMembers() {

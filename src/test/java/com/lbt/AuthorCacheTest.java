@@ -15,9 +15,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for AuthorCache.
- */
 class AuthorCacheTest {
 
     private AuthorRepository authorRepository;
@@ -57,22 +54,18 @@ class AuthorCacheTest {
         assertTrue(authorCache.getAll().isEmpty());
     }
 
-    // --- refresh() resilience tests (Requirement 7.8) ---
 
     @Test
     @DisplayName("refresh() retains stale data when repository throws an exception")
     void refreshRetainsStaleDataOnException() {
-        // Load initial data
         Author a1 = Author.builder().id(1L).name("Stale Author").deleted(false).build();
         when(authorRepository.findByDeletedFalse()).thenReturn(List.of(a1));
         authorCache.init();
 
-        // Now make the repository throw on the next call
         when(authorRepository.findByDeletedFalse()).thenThrow(new RuntimeException("DB unreachable"));
 
         authorCache.refresh();
 
-        // Cache should still have the stale data
         assertEquals(1, authorCache.getAll().size());
         assertTrue(authorCache.getById(1L).isPresent());
         assertEquals("Stale Author", authorCache.getById(1L).get().getName());
@@ -81,12 +74,10 @@ class AuthorCacheTest {
     @Test
     @DisplayName("refresh() replaces cache contents when repository succeeds")
     void refreshReplacesCacheOnSuccess() {
-        // Load initial data
         Author a1 = Author.builder().id(1L).name("Old Author").deleted(false).build();
         when(authorRepository.findByDeletedFalse()).thenReturn(List.of(a1));
         authorCache.init();
 
-        // Refresh with new data
         Author a2 = Author.builder().id(2L).name("New Author").deleted(false).build();
         when(authorRepository.findByDeletedFalse()).thenReturn(List.of(a2));
 
@@ -98,7 +89,6 @@ class AuthorCacheTest {
         assertEquals("New Author", authorCache.getById(2L).get().getName());
     }
 
-    // --- put / evict / getAll / getById tests ---
 
     @Test
     @DisplayName("put() adds an author to the cache, retrievable by getById and getAll")

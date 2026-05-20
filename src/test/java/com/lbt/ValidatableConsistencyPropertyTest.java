@@ -12,65 +12,27 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Feature: entity-validation-abstraction, Property 1: isValid and getValidationErrors consistency
-/**
- * Property 1: isValid and getValidationErrors consistency
- *
- * For any entity implementing Validatable, isValid() returns true if and only if
- * getValidationErrors() returns an empty list.
- *
- * Validates: Requirements 1.3, 1.4
- */
-@Label("Feature: entity-validation-abstraction, Property 1: isValid and getValidationErrors consistency")
 class ValidatableConsistencyPropertyTest {
 
-    /**
-     * For any randomly generated Book entity (with mix of valid and invalid fields),
-     * isValid() must equal getValidationErrors().isEmpty().
-     *
-     * Validates: Requirements 1.3, 1.4
-     */
     @Property(tries = 100)
-    @Label("Book: isValid() == getValidationErrors().isEmpty()")
     void bookIsValidConsistentWithGetValidationErrors(
             @ForAll("randomBooks") Book book) {
         assertConsistency(book);
     }
 
-    /**
-     * For any randomly generated Author entity (with mix of valid and invalid fields),
-     * isValid() must equal getValidationErrors().isEmpty().
-     *
-     * Validates: Requirements 1.3, 1.4
-     */
     @Property(tries = 100)
-    @Label("Author: isValid() == getValidationErrors().isEmpty()")
     void authorIsValidConsistentWithGetValidationErrors(
             @ForAll("randomAuthors") Author author) {
         assertConsistency(author);
     }
 
-    /**
-     * For any randomly generated Member entity (with mix of valid and invalid fields),
-     * isValid() must equal getValidationErrors().isEmpty().
-     *
-     * Validates: Requirements 1.3, 1.4
-     */
     @Property(tries = 100)
-    @Label("Member: isValid() == getValidationErrors().isEmpty()")
     void memberIsValidConsistentWithGetValidationErrors(
             @ForAll("randomMembers") Member member) {
         assertConsistency(member);
     }
 
-    /**
-     * For any randomly generated BorrowTransaction entity (with mix of valid and invalid fields),
-     * isValid() must equal getValidationErrors().isEmpty().
-     *
-     * Validates: Requirements 1.3, 1.4
-     */
     @Property(tries = 100)
-    @Label("BorrowTransaction: isValid() == getValidationErrors().isEmpty()")
     void borrowTransactionIsValidConsistentWithGetValidationErrors(
             @ForAll("randomBorrowTransactions") BorrowTransaction transaction) {
         assertConsistency(transaction);
@@ -143,9 +105,6 @@ class ValidatableConsistencyPropertyTest {
                 });
     }
 
-    /**
-     * Generates nullable strings: null, empty, whitespace-only, or valid non-blank strings.
-     */
     private Arbitrary<String> nullableString() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
@@ -157,9 +116,6 @@ class ValidatableConsistencyPropertyTest {
         );
     }
 
-    /**
-     * Generates nullable strings including over-length values for name fields (max 150).
-     */
     private Arbitrary<String> nullableStringWithLength() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
@@ -171,9 +127,6 @@ class ValidatableConsistencyPropertyTest {
         );
     }
 
-    /**
-     * Generates nullable strings including over-length values for ID fields (max 50).
-     */
     private Arbitrary<String> nullableStringWithId() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
@@ -185,9 +138,6 @@ class ValidatableConsistencyPropertyTest {
         );
     }
 
-    /**
-     * Generates nullable strings including over-length values for contact fields (max 200).
-     */
     private Arbitrary<String> nullableStringWithContact() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),

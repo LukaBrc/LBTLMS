@@ -13,47 +13,25 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Property 1: Null or blank filter returns all authors
- *
- * For any list of authors in the cache and for any null or blank (whitespace-only)
- * filter string, calling getAuthorsByName SHALL return the complete unfiltered list.
- *
- * Validates: Requirements 1.2, 1.3
- */
-@Label("Feature: author-name-filter, Property 1: Null or blank filter returns all authors")
 class AuthorNameFilterNullBlankPropertyTest {
 
-    /**
-     * Property 1: Null or blank filter returns all authors.
-     *
-     * For any random list of authors and any null/blank filter string,
-     * getAuthorsByName must return the full list unchanged.
-     *
-     * Validates: Requirements 1.2, 1.3
-     */
     @Property(tries = 100)
-    @Label("Null or blank filter returns all authors unchanged")
     void nullOrBlankFilterReturnsAllAuthors(
             @ForAll("randomAuthorLists") List<Author> authors,
             @ForAll("nullOrBlankStrings") String filter) {
 
-        // Set up a mocked AuthorCache that returns our generated author list
         AuthorRepository mockRepository = mock(AuthorRepository.class);
         when(mockRepository.findByDeletedFalse()).thenReturn(Collections.emptyList());
         AuthorCache authorCache = new AuthorCache(mockRepository);
 
-        // Populate the cache with generated authors
         for (Author author : authors) {
             authorCache.put(author);
         }
 
         AuthorService authorService = new AuthorService(mockRepository, authorCache);
 
-        // Act
         List<Author> result = authorService.getAuthorsByName(filter);
 
-        // Assert: result must contain exactly the same authors as the input list
         assertEquals(authors.size(), result.size(),
                 "Result size must equal the full author list size when filter is null/blank");
         assertTrue(result.containsAll(authors),
@@ -62,7 +40,6 @@ class AuthorNameFilterNullBlankPropertyTest {
                 "Result must not contain any extra authors beyond what is in the cache");
     }
 
-    // --- Generators ---
 
     @Provide
     Arbitrary<List<Author>> randomAuthorLists() {

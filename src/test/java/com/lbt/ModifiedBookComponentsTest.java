@@ -10,13 +10,8 @@ import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for modified Book components after Author FK migration.
- * Validates: Requirements 2.3, 2.4
- */
 class ModifiedBookComponentsTest {
 
-    // --- Book entity provides access to Author object (Req 2.3) ---
 
     @Test
     void bookProvidesAccessToAssociatedAuthorObject() {
@@ -36,7 +31,6 @@ class ModifiedBookComponentsTest {
         assertEquals("Joshua Bloch", book.getAuthor().getName());
     }
 
-    // --- BookResponse includes authorId and authorName (Req 2.4) ---
 
     @Test
     void bookResponseIncludesAuthorIdAndAuthorName() {
@@ -53,7 +47,6 @@ class ModifiedBookComponentsTest {
         assertEquals("Martin Fowler", response.getAuthorName());
     }
 
-    // --- BookRequest uses authorId instead of author string (Req 2.1) ---
 
     @Test
     void bookRequestUsesAuthorIdInsteadOfAuthorString() {
@@ -62,7 +55,6 @@ class ModifiedBookComponentsTest {
 
         assertEquals(10L, request.getAuthorId());
 
-        // Verify there is no getAuthor() method returning String
         boolean hasStringGetAuthor = false;
         for (Method method : BookRequest.class.getDeclaredMethods()) {
             if (method.getName().equals("getAuthor") && method.getReturnType() == String.class) {

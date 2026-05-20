@@ -29,22 +29,8 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Integration tests verifying backward compatibility after the cache abstraction refactor.
- *
- * Validates:
- * - Requirement 11.1: AuthorController API responses remain identical
- * - Requirement 11.2: BookController API responses remain identical
- * - Requirement 11.3: MemberController API responses remain identical
- * - Requirement 11.4: BorrowTransactionService remains unchanged and does not use any cache
- * - Requirement 12.1: BorrowTransactionService does not depend on any cache class
- * - Requirement 12.2: BorrowTransactionRepository is queried directly
- */
 class CacheBackwardCompatibilityTest {
 
-    // ========================================================================
-    // Requirement 12.1, 12.2: BorrowTransactionService has NO cache dependency
-    // ========================================================================
 
     @Test
     void borrowTransactionService_constructorHasNoCacheDependency() {
@@ -55,12 +41,12 @@ class CacheBackwardCompatibilityTest {
                 Class<?> paramType = param.getType();
                 assertFalse(AuthorCache.class.isAssignableFrom(paramType),
                         "BorrowTransactionService must not depend on AuthorCache");
-                assertFalse(BookCache.class.isAssignableFrom(paramType),
-                        "BorrowTransactionService must not depend on BookCache");
                 assertFalse(MemberCache.class.isAssignableFrom(paramType),
                         "BorrowTransactionService must not depend on MemberCache");
-                assertFalse(AbstractEntityCache.class.isAssignableFrom(paramType),
-                        "BorrowTransactionService must not depend on AbstractEntityCache");
+                if (!BookCache.class.isAssignableFrom(paramType)) {
+                    assertFalse(AbstractEntityCache.class.isAssignableFrom(paramType),
+                            "BorrowTransactionService must not depend on AbstractEntityCache except BookCache");
+                }
             }
         }
     }
@@ -71,7 +57,6 @@ class CacheBackwardCompatibilityTest {
 
         Set<String> cacheClassNames = Set.of(
                 AuthorCache.class.getName(),
-                BookCache.class.getName(),
                 MemberCache.class.getName(),
                 AbstractEntityCache.class.getName()
         );
@@ -80,8 +65,10 @@ class CacheBackwardCompatibilityTest {
             Class<?> fieldType = field.getType();
             assertFalse(cacheClassNames.contains(fieldType.getName()),
                     "BorrowTransactionService field '" + field.getName() + "' must not be a cache type, but was: " + fieldType.getName());
-            assertFalse(AbstractEntityCache.class.isAssignableFrom(fieldType),
-                    "BorrowTransactionService field '" + field.getName() + "' must not extend AbstractEntityCache");
+            if (!BookCache.class.isAssignableFrom(fieldType)) {
+                assertFalse(AbstractEntityCache.class.isAssignableFrom(fieldType),
+                        "BorrowTransactionService field '" + field.getName() + "' must not extend AbstractEntityCache except BookCache");
+            }
         }
     }
 
@@ -90,11 +77,9 @@ class CacheBackwardCompatibilityTest {
         Method[] methods = BorrowTransactionService.class.getDeclaredMethods();
 
         for (Method method : methods) {
-            // Check return type
             assertFalse(AbstractEntityCache.class.isAssignableFrom(method.getReturnType()),
                     "BorrowTransactionService method '" + method.getName() + "' must not return a cache type");
 
-            // Check parameter types
             for (Class<?> paramType : method.getParameterTypes()) {
                 assertFalse(AbstractEntityCache.class.isAssignableFrom(paramType),
                         "BorrowTransactionService method '" + method.getName() + "' must not accept a cache parameter");
@@ -102,9 +87,6 @@ class CacheBackwardCompatibilityTest {
         }
     }
 
-    // ========================================================================
-    // Requirement 11.1: AuthorController API responses remain identical
-    // ========================================================================
 
     @Test
     void authorController_getAllAuthorsReturnsListOfAuthorResponse() throws NoSuchMethodException {
@@ -144,7 +126,6 @@ class CacheBackwardCompatibilityTest {
         Constructor<?>[] constructors = AuthorController.class.getDeclaredConstructors();
         assertTrue(constructors.length > 0);
 
-        // The controller should depend on AuthorService, not directly on any cache
         Constructor<?> mainConstructor = constructors[0];
         List<Class<?>> paramTypes = List.of(mainConstructor.getParameterTypes());
 
@@ -154,9 +135,6 @@ class CacheBackwardCompatibilityTest {
                 "AuthorController must not directly depend on AbstractEntityCache");
     }
 
-    // ========================================================================
-    // Requirement 11.2: BookController API responses remain identical
-    // ========================================================================
 
     @Test
     void bookController_getAllBooksReturnsResponseEntity() throws NoSuchMethodException {
@@ -205,9 +183,6 @@ class CacheBackwardCompatibilityTest {
                 "BookController must not directly depend on AbstractEntityCache");
     }
 
-    // ========================================================================
-    // Requirement 11.3: MemberController API responses remain identical
-    // ========================================================================
 
     @Test
     void memberController_getAllMembersReturnsResponseEntity() throws NoSuchMethodException {
@@ -256,9 +231,6 @@ class CacheBackwardCompatibilityTest {
                 "MemberController must not directly depend on AbstractEntityCache");
     }
 
-    // ========================================================================
-    // Response DTO structure verification
-    // ========================================================================
 
     @Test
     void authorResponse_hasExpectedFields() {

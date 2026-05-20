@@ -1,7 +1,6 @@
 package com.lbt.entities;
 
 import com.lbt.validation.Validatable;
-import com.lbt.validation.ValidationError;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -53,8 +50,9 @@ public class Book implements Validatable {
     }
 
     public void setTotalCopies(int totalCopies) {
+        int borrowedCopies = Math.max(0, this.totalCopies - this.availableCopies);
         this.totalCopies = totalCopies;
-        this.availableCopies = totalCopies;
+        this.availableCopies = Math.max(0, totalCopies - borrowedCopies);
     }
 
     public boolean borrowCopy() {
@@ -69,20 +67,6 @@ public class Book implements Validatable {
         if (availableCopies < totalCopies) availableCopies++;
     }
 
-    @Override
-    public List<ValidationError> getValidationErrors() {
-        List<ValidationError> errors = new ArrayList<>();
-        if (title == null || title.trim().isEmpty()) {
-            errors.add(new ValidationError("title", "Book title must not be empty."));
-        }
-        if (author == null) {
-            errors.add(new ValidationError("author", "Book author must not be null."));
-        }
-        if (isbn == null || isbn.trim().isEmpty()) {
-            errors.add(new ValidationError("isbn", "Book ISBN must not be empty."));
-        }
-        return errors;
-    }
 
     @Override
     public String toString() {
