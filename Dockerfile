@@ -18,4 +18,4 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8081
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_TOOL_OPTIONS -jar app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

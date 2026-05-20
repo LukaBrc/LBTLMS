@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PreservationTest {
 
     @Nested
-    @DisplayName("Test 1 Ã¢â‚¬â€ BorrowTransaction entity preservation (Req 3.1)")
+    @DisplayName("Test 1 - BorrowTransaction entity preservation (Req 3.1)")
     class BorrowTransactionEntityPreservation {
 
         @Test
@@ -105,7 +105,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 2a Ã¢â‚¬â€ POST /api/v1/books with valid request returns 201 Created")
+        @DisplayName("Test 2a - POST /api/v1/books with valid request returns 201 Created")
         void bookPostValid() throws Exception {
             when(authorService.getAuthorById(1L)).thenReturn(Author.builder().id(1L).name("Robert C. Martin").build());
 
@@ -128,7 +128,7 @@ class PreservationTest {
         }
 
         @Test
-        @DisplayName("Test 2b Ã¢â‚¬â€ POST /api/v1/books with missing fields returns 400")
+        @DisplayName("Test 2b - POST /api/v1/books with missing fields returns 400")
         void bookPostInvalid() throws Exception {
             String invalidBookJson = """
                     {
@@ -147,7 +147,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 3 Ã¢â‚¬â€ GET /api/v1/books returns 200 with list of books")
+        @DisplayName("Test 3 - GET /api/v1/books returns 200 with list of books")
         void bookGetAll() throws Exception {
             Author author = Author.builder().id(1L).name("Robert C. Martin").build();
             Book book = Book.builder()
@@ -174,7 +174,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 4a Ã¢â‚¬â€ GET /api/v1/books/{isbn} for existing book returns 200")
+        @DisplayName("Test 4a - GET /api/v1/books/{isbn} for existing book returns 200")
         void bookGetByIsbnFound() throws Exception {
             Author author = Author.builder().id(1L).name("Robert C. Martin").build();
             Book book = Book.builder()
@@ -195,7 +195,7 @@ class PreservationTest {
         }
 
         @Test
-        @DisplayName("Test 4b Ã¢â‚¬â€ GET /api/v1/books/{isbn} for non-existent ISBN returns 404")
+        @DisplayName("Test 4b - GET /api/v1/books/{isbn} for non-existent ISBN returns 404")
         void bookGetByIsbnNotFound() throws Exception {
             when(bookService.findByIsbn("999-0-00-000000-0")).thenReturn(null);
 
@@ -205,7 +205,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 5 Ã¢â‚¬â€ DELETE /api/v1/books/{isbn} returns 204 No Content")
+        @DisplayName("Test 5 - DELETE /api/v1/books/{isbn} returns 204 No Content")
         void bookDelete() throws Exception {
             mockMvc.perform(delete("/api/v1/books/978-0-13-235088-4"))
                     .andExpect(status().isNoContent());
@@ -215,7 +215,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 6 Ã¢â‚¬â€ POST /api/v1/members with valid request returns 201 Created")
+        @DisplayName("Test 6 - POST /api/v1/members with valid request returns 201 Created")
         void memberPostValid() throws Exception {
             String validMemberJson = """
                     {
@@ -235,7 +235,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 7 Ã¢â‚¬â€ GET /api/v1/members returns 200 with list of members")
+        @DisplayName("Test 7 - GET /api/v1/members returns 200 with list of members")
         void memberGetAll() throws Exception {
             Member member = new Member();
             member.setMemberId("M001");
@@ -255,7 +255,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 8a Ã¢â‚¬â€ POST /api/v1/borrows creates borrow transaction")
+        @DisplayName("Test 8a - POST /api/v1/borrows creates borrow transaction")
         void borrowBookFlow() throws Exception {
             when(borrowTransactionService.borrowBook("978-0-13-235088-4", "M001")).thenReturn(true);
 
@@ -276,7 +276,7 @@ class PreservationTest {
         }
 
         @Test
-        @DisplayName("Test 8b Ã¢â‚¬â€ POST /api/v1/borrows/return closes borrow transaction")
+        @DisplayName("Test 8b - POST /api/v1/borrows/return closes borrow transaction")
         void returnBookFlow() throws Exception {
             when(borrowTransactionService.returnBook("978-0-13-235088-4", "M001")).thenReturn(true);
 
@@ -298,7 +298,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 9 Ã¢â‚¬â€ GET /api/v1/borrows/overdue returns 200 with overdue transactions")
+        @DisplayName("Test 9 - GET /api/v1/borrows/overdue returns 200 with overdue transactions")
         void overdueQuery() throws Exception {
             BorrowTransaction tx = new BorrowTransaction();
             tx.setBookIsbn("978-0-13-235088-4");
@@ -315,7 +315,7 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 10a Ã¢â‚¬â€ IllegalArgumentException returns 400 with message")
+        @DisplayName("Test 10a - IllegalArgumentException returns 400 with message")
         void globalExceptionHandlerIllegalArgument() throws Exception {
             doThrow(new IllegalArgumentException("Book ISBN must not be empty."))
                     .when(bookService).addBook(any(Book.class));
@@ -338,7 +338,7 @@ class PreservationTest {
         }
 
         @Test
-        @DisplayName("Test 10b Ã¢â‚¬â€ MethodArgumentNotValidException returns 400 with field errors")
+        @DisplayName("Test 10b - MethodArgumentNotValidException returns 400 with field errors")
         void globalExceptionHandlerValidation() throws Exception {
             String invalidJson = """
                     {
@@ -360,7 +360,7 @@ class PreservationTest {
     }
 
     @Nested
-    @DisplayName("Test 11 Ã¢â‚¬â€ Business logic preservation (Req 3.8, 3.9)")
+    @DisplayName("Test 11 - Business logic preservation (Req 3.8, 3.9)")
     class BusinessLogicPreservation {
 
         @Test

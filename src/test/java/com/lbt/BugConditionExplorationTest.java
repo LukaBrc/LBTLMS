@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@DisplayName("Bug Condition Exploration Ã¢â‚¬â€ Entity/Repository Layer")
+@DisplayName("Bug Condition Exploration - Entity/Repository Layer")
 class BugConditionExplorationTest {
 
     @Autowired
@@ -33,7 +33,7 @@ class BugConditionExplorationTest {
     private EntityManager entityManager;
 
     @Test
-    @DisplayName("Test 1 Ã¢â‚¬â€ Bug 1 & 2: Book and Member entities should have auto-generated Long id")
+    @DisplayName("Test 1 - Bug 1 & 2: Book and Member entities should have auto-generated Long id")
     void entityIdAutoGeneration() {
 
         Field bookIdField = null;
@@ -60,7 +60,7 @@ class BugConditionExplorationTest {
     }
 
     @Test
-    @DisplayName("Test 2 Ã¢â‚¬â€ Bug 3: Member borrowedIsbns should persist to database")
+    @DisplayName("Test 2 - Bug 3: Member borrowedIsbns should persist to database")
     void memberBorrowedIsbnsPersistence() {
 
         Member member = new Member();
@@ -82,7 +82,7 @@ class BugConditionExplorationTest {
     }
 
     @Test
-    @DisplayName("Test 3 Ã¢â‚¬â€ Bug 4: MemberRepository.existsById should not cause StackOverflowError")
+    @DisplayName("Test 3 - Bug 4: MemberRepository.existsById should not cause StackOverflowError")
     void memberRepositoryExistsByIdNonRecursion() {
 
         Member member = new Member();
@@ -95,7 +95,7 @@ class BugConditionExplorationTest {
         assertDoesNotThrow(() -> {
             boolean exists = memberRepository.existsByMemberId("M003");
             assertTrue(exists, "existsByMemberId should return true for existing member");
-        }, "existsByMemberId should not throw StackOverflowError Ã¢â‚¬â€ " +
+        }, "existsByMemberId should not throw StackOverflowError - " +
            "the default method recursively calls itself instead of delegating to JPA");
     }
 }

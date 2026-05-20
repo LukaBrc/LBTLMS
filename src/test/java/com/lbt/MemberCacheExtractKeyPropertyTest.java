@@ -28,7 +28,7 @@ class MemberCacheExtractKeyPropertyTest {
         memberCache.put(member);
 
         assertTrue(memberCache.getById(expectedKey).isPresent(),
-                "getById(member.getMemberId()) should find the member after put Ã¢â‚¬â€ confirms extractKey returns getMemberId()");
+                "getById(member.getMemberId()) should find the member after put - confirms extractKey returns getMemberId()");
         assertEquals(member, memberCache.getById(expectedKey).get(),
                 "The retrieved member should be the same instance that was put");
 

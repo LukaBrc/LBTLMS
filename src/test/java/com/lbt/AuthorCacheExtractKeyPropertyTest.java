@@ -28,7 +28,7 @@ class AuthorCacheExtractKeyPropertyTest {
         authorCache.put(author);
 
         assertTrue(authorCache.getById(expectedKey).isPresent(),
-                "getById(author.getId()) should find the author after put  confirms extractKey returns getId()");
+                "getById(author.getId()) should find the author after put - confirms extractKey returns getId()");
         assertEquals(author, authorCache.getById(expectedKey).get(),
                 "The retrieved author should be the same instance that was put");
 

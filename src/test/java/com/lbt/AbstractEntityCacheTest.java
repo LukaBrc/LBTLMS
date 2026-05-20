@@ -80,7 +80,7 @@ class AbstractEntityCacheTest {
     }
 
     @Test
-    @DisplayName("put() overwrites value for existing key Ã¢â‚¬â€ verified with distinguishable entities")
+    @DisplayName("put() overwrites value for existing key - verified with distinguishable entities")
     void putOverwritesValueForExistingKeyDistinguishable() {
         AbstractEntityCache<String[], String> keyedCache = new AbstractEntityCache<>() {
             @Override

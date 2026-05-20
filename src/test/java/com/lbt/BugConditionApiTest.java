@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest({MemberController.class, BorrowController.class,
              BookController.class, GlobalExceptionHandler.class})
 @ActiveProfiles("test")
-@DisplayName("Bug Condition Exploration Ã¢â‚¬â€ API Endpoints")
+@DisplayName("Bug Condition Exploration - API Endpoints")
 class BugConditionApiTest {
 
     @Autowired
@@ -52,7 +52,7 @@ class BugConditionApiTest {
     private AuthorService authorService;
 
     @Test
-    @DisplayName("Test 5 Ã¢â‚¬â€ Bug 6: GET /api/v1/members and /api/v1/borrows should return 200")
+    @DisplayName("Test 5 - Bug 6: GET /api/v1/members and /api/v1/borrows should return 200")
     void consistentApiVersioning() throws Exception {
 
         when(memberService.getAllMembers()).thenReturn(List.of());
@@ -66,7 +66,7 @@ class BugConditionApiTest {
     }
 
     @Test
-    @DisplayName("Test 6 Ã¢â‚¬â€ Bug 7: PUT /api/v1/members/{memberId} should return 200")
+    @DisplayName("Test 6 - Bug 7: PUT /api/v1/members/{memberId} should return 200")
     void memberControllerPutEndpoint() throws Exception {
 
         Member mockMember = new Member();
@@ -90,7 +90,7 @@ class BugConditionApiTest {
     }
 
     @Test
-    @DisplayName("Test 7 Ã¢â‚¬â€ Bug 8: DELETE /api/v1/members/{memberId} should return 204")
+    @DisplayName("Test 7 - Bug 8: DELETE /api/v1/members/{memberId} should return 204")
     void memberControllerDeleteEndpoint() throws Exception {
 
         mockMvc.perform(delete("/api/v1/members/M001"))
@@ -98,7 +98,7 @@ class BugConditionApiTest {
     }
 
     @Test
-    @DisplayName("Test 8 Ã¢â‚¬â€ Bug 9: PUT /api/v1/books/{isbn} should return 200")
+    @DisplayName("Test 8 - Bug 9: PUT /api/v1/books/{isbn} should return 200")
     void bookControllerPutEndpoint() throws Exception {
 
         Author mockAuthor = Author.builder().id(1L).name("Updated Author").build();

@@ -28,7 +28,7 @@ class BookCacheExtractKeyPropertyTest {
         bookCache.put(book);
 
         assertTrue(bookCache.getById(expectedKey).isPresent(),
-                "getById(book.getIsbn()) should find the book after put Ã¢â‚¬â€ confirms extractKey returns getIsbn()");
+                "getById(book.getIsbn()) should find the book after put - confirms extractKey returns getIsbn()");
         assertEquals(book, bookCache.getById(expectedKey).get(),
                 "The retrieved book should be the same instance that was put");
 
