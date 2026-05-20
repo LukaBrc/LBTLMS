@@ -1,142 +1,141 @@
-# Library Management System (LBTLMS)
+# 📚 Library Management System (LBTLMS)
 
-Spring Boot REST API for managing authors, books, members, and borrow/return transactions.
+A Java Spring Boot application providing RESTful APIs to manage a library's books, authors, members, and borrow transactions.
 
-## Highlights
+---
 
-- Layered architecture: `controllers -> services -> repositories -> entities`.
-- Centralized validation via `ValidationHandler` and `Validatable` default methods.
-- Caffeine-backed caches for `Author`, `Book`, and `Member` with scheduled refresh.
-- Soft-delete for authors (`deleted=true`) while keeping active queries clean.
-- Borrow policy: max 5 active borrows per member.
-- Duplicate active borrows of the same ISBN are supported.
-- Return flow closes one active borrow transaction (oldest first) per `(isbn, memberId)`.
-- Copy accounting preserves borrowed count when `totalCopies` changes.
+## ✨ Features
 
-## Tech stack
+- **Author Management:** Create, update, soft-delete, and list active authors.
+- **Book Management:** Add, update, delete, and view books linked to authors.
+- **Member Management:** Register, update, delete, and view members.
+- **Borrowing System:** Borrow and return one copy per request with transaction tracking, overdue detection, and 5-active-borrow limit per member.
+- **Duplicate Copy Support:** Same member can hold multiple active borrows of the same ISBN; return closes the oldest active transaction.
+- **Copy Accounting:** `totalCopies` updates preserve borrowed count and recompute `availableCopies` safely.
+- **Caching:** Caffeine-backed `Author`, `Book`, and `Member` caches with startup snapshot load, write-through updates, scheduled refresh, and stale-data retention on refresh failure.
+- **Validation:** Centralized `ValidationHandler` for entity rules plus Jakarta Bean Validation on DTOs.
+- **Global Error Handling:** Centralized exception responses via `GlobalExceptionHandler`.
 
-- Java 17
-- Spring Boot 4.0.2
-- Spring Data JPA + Hibernate
-- Spring Validation (Jakarta Bean Validation)
-- Spring Scheduling
-- Caffeine cache
-- MySQL (runtime) and H2 (tests)
-- Lombok
-- jqwik (property-based testing)
+---
 
-## Project layout
-
-Key packages under `src/main/java/com/lbt`:
-
-- `controllers` - REST endpoints
-- `dto` - request/response payloads
-- `entities` - JPA models
-- `repositories` - Spring Data repositories
-- `services` - business logic and caches
-- `services/cache` - generic cache base class
-- `validation` - centralized validation contracts/handler
-
-### Project structure
+## 📁 Project Structure
 
 ```text
 src/
-  main/
-	java/com/lbt/
-	  controllers/
-		AuthorController.java
-		BookController.java
-		BorrowController.java
-		GlobalExceptionHandler.java
-		MemberController.java
-	  dto/
-		AuthorRequest.java
-		AuthorResponse.java
-		BookRequest.java
-		BookResponse.java
-		BorrowRequest.java
-		MemberRequest.java
-		MemberResponse.java
-	  entities/
-		Author.java
-		Book.java
-		BorrowTransaction.java
-		Member.java
-	  repositories/
-		AuthorRepository.java
-		BookRepository.java
-		BorrowTransactionRepository.java
-		MemberRepository.java
-	  services/
-		cache/
-		  AbstractEntityCache.java
-		AuthorCache.java
-		AuthorService.java
-		BookCache.java
-		BookService.java
-		BorrowTransactionService.java
-		MemberCache.java
-		MemberService.java
-	  validation/
-		Validatable.java
-		ValidationError.java
-		ValidationHandler.java
-		ValidationHandlerResolver.java
-	  lms.java
-	resources/
-	  application.properties
-	  application-local.properties
-	  application-docker.properties
-  test/
-	java/com/lbt/
-	  ... unit, property-based, and integration tests
-	resources/
-	  application-test.properties
+ ├── main/
+ │    ├── java/com/lbt/
+ │    │    ├── controllers/
+ │    │    │    ├── AuthorController.java
+ │    │    │    ├── BookController.java
+ │    │    │    ├── BorrowController.java
+ │    │    │    ├── GlobalExceptionHandler.java
+ │    │    │    └── MemberController.java
+ │    │    ├── dto/
+ │    │    │    ├── AuthorRequest.java
+ │    │    │    ├── AuthorResponse.java
+ │    │    │    ├── BookRequest.java
+ │    │    │    ├── BookResponse.java
+ │    │    │    ├── BorrowRequest.java
+ │    │    │    ├── MemberRequest.java
+ │    │    │    └── MemberResponse.java
+ │    │    ├── entities/
+ │    │    │    ├── Author.java
+ │    │    │    ├── Book.java
+ │    │    │    ├── BorrowTransaction.java
+ │    │    │    └── Member.java
+ │    │    ├── repositories/
+ │    │    │    ├── AuthorRepository.java
+ │    │    │    ├── BookRepository.java
+ │    │    │    ├── BorrowTransactionRepository.java
+ │    │    │    └── MemberRepository.java
+ │    │    ├── services/
+ │    │    │    ├── cache/
+ │    │    │    │    └── AbstractEntityCache.java
+ │    │    │    ├── AuthorCache.java
+ │    │    │    ├── AuthorService.java
+ │    │    │    ├── BookCache.java
+ │    │    │    ├── BookService.java
+ │    │    │    ├── BorrowTransactionService.java
+ │    │    │    ├── MemberCache.java
+ │    │    │    └── MemberService.java
+ │    │    ├── validation/
+ │    │    │    ├── Validatable.java
+ │    │    │    ├── ValidationError.java
+ │    │    │    ├── ValidationHandler.java
+ │    │    │    └── ValidationHandlerResolver.java
+ │    │    └── lms.java
+ │    └── resources/
+ │         ├── application.properties
+ │         ├── application-local.properties
+ │         └── application-docker.properties
+ └── test/
+      ├── java/com/lbt/
+      │    └── ... unit, property-based, and integration tests
+      └── resources/
+           └── application-test.properties
 ```
 
-## API endpoints
+---
+
+## 🚀 Technologies
+
+- Java 17
+- Spring Boot 4.0.2
+- Spring Data JPA / Hibernate
+- Spring Validation (Jakarta Bean Validation)
+- Spring Scheduling
+- Caffeine
+- MySQL (runtime) / H2 (testing)
+- Lombok
+- jqwik (property-based testing)
+
+---
+
+## 🌐 API Endpoints
 
 All endpoints are prefixed with `/api/v1`.
 
-### Authors
+### Authors (`/api/v1/authors`)
 
 | Method | Path | Description |
-|---|---|---|
-| POST | `/api/v1/authors` | Create author |
+|--------|------|-------------|
+| POST | `/api/v1/authors` | Create an author |
 | GET | `/api/v1/authors` | List active authors (optional `name` filter) |
-| GET | `/api/v1/authors/{id}` | Get author by id |
-| PUT | `/api/v1/authors/{id}` | Update author |
-| DELETE | `/api/v1/authors/{id}` | Soft-delete author |
+| GET | `/api/v1/authors/{id}` | Get author by ID |
+| PUT | `/api/v1/authors/{id}` | Update an author |
+| DELETE | `/api/v1/authors/{id}` | Soft-delete an author |
 
-### Books
+### Books (`/api/v1/books`)
 
 | Method | Path | Description |
-|---|---|---|
-| POST | `/api/v1/books` | Create book |
-| GET | `/api/v1/books` | List books |
+|--------|------|-------------|
+| POST | `/api/v1/books` | Add a book |
+| GET | `/api/v1/books` | List all books |
 | GET | `/api/v1/books/{isbn}` | Get book by ISBN |
-| PUT | `/api/v1/books/{isbn}` | Update book metadata/copies |
-| DELETE | `/api/v1/books/{isbn}` | Delete book |
+| PUT | `/api/v1/books/{isbn}` | Update a book |
+| DELETE | `/api/v1/books/{isbn}` | Remove a book |
 
-### Members
-
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/v1/members` | Register member |
-| GET | `/api/v1/members` | List members |
-| GET | `/api/v1/members/{memberId}` | Get member by memberId |
-| PUT | `/api/v1/members/{memberId}` | Update member |
-| DELETE | `/api/v1/members/{memberId}` | Delete member |
-
-### Borrows
+### Members (`/api/v1/members`)
 
 | Method | Path | Description |
-|---|---|---|
+|--------|------|-------------|
+| POST | `/api/v1/members` | Register a member |
+| GET | `/api/v1/members` | List all members |
+| GET | `/api/v1/members/{memberId}` | Get member by ID |
+| PUT | `/api/v1/members/{memberId}` | Update a member |
+| DELETE | `/api/v1/members/{memberId}` | Delete a member |
+
+### Borrows (`/api/v1/borrows`)
+
+| Method | Path | Description |
+|--------|------|-------------|
 | POST | `/api/v1/borrows` | Borrow one copy |
 | POST | `/api/v1/borrows/return` | Return one copy |
-| GET | `/api/v1/borrows/overdue` | List overdue active borrows |
+| GET | `/api/v1/borrows/overdue` | List overdue transactions |
 
-## Profiles and configuration
+---
+
+## ⚙️ Configuration
 
 Configuration files:
 
@@ -148,43 +147,36 @@ Configuration files:
 
 - `spring.config.import=optional:file:.env[.properties]`
 
-Datasource settings are Spring-standard env based:
+| Property | Default | Description |
+|----------|---------|-------------|
+| `server.port` | `${SERVER_PORT:8081}` | HTTP server port |
+| `spring.datasource.url` (local) | `jdbc:mysql://localhost:3306/library?...` | MySQL URL when app runs on host |
+| `spring.datasource.url` (docker) | `jdbc:mysql://mysql:3306/library?...` | MySQL URL when app runs in compose network |
+| `spring.datasource.username` | `lbt_user` | Database username |
+| `spring.datasource.password` | `${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:}}` | Database password |
+| `author.cache.refresh-interval-ms` | `300000` | Author cache refresh interval |
+| `book.cache.refresh-interval-ms` | `300000` | Book cache refresh interval |
+| `member.cache.refresh-interval-ms` | `300000` | Member cache refresh interval |
 
-- `SPRING_DATASOURCE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
+---
 
-Server port defaults to `8081`:
+## ▶️ Running the Application (Windows / PowerShell)
 
-- `server.port=${SERVER_PORT:8081}`
+Run commands from the project root.
 
-Cache refresh intervals (default 5 minutes):
-
-- `author.cache.refresh-interval-ms`
-- `book.cache.refresh-interval-ms`
-- `member.cache.refresh-interval-ms`
-
-## Running locally (Windows / PowerShell)
-
-Run commands from the project root directory.
-
-Start MySQL container only:
+Start only MySQL (useful for IntelliJ local debug):
 
 ```powershell
 docker compose up -d mysql
 ```
 
-Run app with local profile:
+Run app locally with the `local` profile:
 
 ```powershell
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-The API is available at:
-
-- `http://localhost:8081`
-
-Run app + MySQL in Docker:
+Run full stack in Docker:
 
 ```powershell
 docker compose up -d
@@ -196,9 +188,17 @@ Package jar:
 .\mvnw.cmd clean package
 ```
 
-## Running tests
+Default API base URL:
 
-Run full suite:
+- `http://localhost:8081`
+
+---
+
+## 🧪 Testing
+
+Tests are in `src/test/java/com/lbt/` and use H2 (`src/test/resources/application-test.properties`).
+
+Run all tests:
 
 ```powershell
 .\mvnw.cmd test
@@ -210,4 +210,3 @@ Run a focused class:
 .\mvnw.cmd "-Dtest=BorrowBookAvailabilityIntegrationTest" test
 ```
 
-Tests use H2 via `src/test/resources/application-test.properties`.
