@@ -110,8 +110,9 @@ public class BorrowTransactionService {
         if (entity == null) {
             throw new IllegalArgumentException(entityName + " must not be null.");
         }
-        if (!validationHandler.isValid(entity)) {
-            String message = validationHandler.getValidationErrors(entity).stream()
+        List<ValidationError> errors = validationHandler.getValidationErrors(entity);
+        if (!errors.isEmpty()) {
+            String message = errors.stream()
                 .map(ValidationError::message)
                 .collect(Collectors.joining("; "));
             throw new IllegalArgumentException(message);
