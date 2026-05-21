@@ -4,6 +4,7 @@ import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.repositories.AuthorRepository;
 import com.lbt.repositories.BookRepository;
+import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.services.AuthorCache;
 import com.lbt.services.AuthorService;
 import com.lbt.services.BookCache;
@@ -21,16 +22,17 @@ import static org.mockito.Mockito.*;
 class BackwardCompatMessagePropertyTest {
 
     private final BookRepository bookRepository = mock(BookRepository.class);
+    private final BorrowTransactionRepository borrowTransactionRepository = mock(BorrowTransactionRepository.class);
     private final AuthorService authorServiceMock = mock(AuthorService.class);
     private final BookCache bookCache;
     private final BookService bookService;
 
     {
         BookRepository cacheRepo = mock(BookRepository.class);
-        when(cacheRepo.findAll()).thenReturn(Collections.emptyList());
+        when(cacheRepo.findAllByDeletedFalse()).thenReturn(Collections.emptyList());
         bookCache = new BookCache(cacheRepo);
         bookCache.init();
-        bookService = new BookService(bookRepository, authorServiceMock, bookCache);
+        bookService = new BookService(bookRepository, authorServiceMock, bookCache, borrowTransactionRepository);
     }
 
     private final AuthorRepository authorRepository = mock(AuthorRepository.class);

@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.lbt.entities.Book;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,9 +14,15 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Book findByIsbn(String isbn);
 
+    Book findByIsbnAndDeletedFalse(String isbn);
+
     Optional<Book> findByTitle(String title);
 
     boolean existsByIsbn(String isbn);
+
+    boolean existsByIsbnAndDeletedFalse(String isbn);
+
+    List<Book> findAllByDeletedFalse();
 
     @Transactional
     void deleteByIsbn(String isbn);

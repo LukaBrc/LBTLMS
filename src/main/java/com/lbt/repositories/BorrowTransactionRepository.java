@@ -24,6 +24,8 @@ public interface BorrowTransactionRepository extends JpaRepository<BorrowTransac
     List<BorrowTransaction> findByBookIsbnAndMemberIdAndReturnDateIsNullOrderByBorrowDateAscIdAsc(
             String bookIsbn, String memberId);
 
+    boolean existsByBookIsbnAndReturnDateIsNull(String bookIsbn);
+
     @Query("SELECT t FROM BorrowTransaction t " +
            "WHERE t.returnDate IS NULL AND t.dueDate < :checkDate")
     List<BorrowTransaction> findOverdue(@Param("checkDate") LocalDate checkDate);

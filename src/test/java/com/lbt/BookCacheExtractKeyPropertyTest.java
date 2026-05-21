@@ -17,7 +17,7 @@ class BookCacheExtractKeyPropertyTest {
 
     BookCacheExtractKeyPropertyTest() {
         BookRepository mockRepository = mock(BookRepository.class);
-        when(mockRepository.findAll()).thenReturn(Collections.emptyList());
+        when(mockRepository.findAllByDeletedFalse()).thenReturn(Collections.emptyList());
         this.bookCache = new BookCache(mockRepository);
     }
 

@@ -19,7 +19,7 @@ public class BookCache extends AbstractEntityCache<Book, String> {
 
     @Override
     protected List<Book> loadAll() {
-        return bookRepository.findAll();
+        return bookRepository.findAllByDeletedFalse();
     }
 
     @Override
