@@ -2,7 +2,10 @@ package com.lbt;
 
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
+import com.lbt.exceptions.ResourceConflictException;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.repositories.BookRepository;
+import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.services.AuthorService;
 import com.lbt.services.BookCache;
 import com.lbt.services.BookService;
@@ -26,6 +29,9 @@ class BookServiceTest {
     @Mock
     private AuthorService authorService;
 
+    @Mock
+    private BorrowTransactionRepository borrowTransactionRepository;
+
     private BookCache bookCache;
 
     private BookService bookService;
@@ -36,10 +42,10 @@ class BookServiceTest {
     @BeforeEach
     void setUp() {
         BookRepository cacheRepo = mock(BookRepository.class);
-        when(cacheRepo.findAll()).thenReturn(Collections.emptyList());
+        when(cacheRepo.findAllByDeletedFalse()).thenReturn(Collections.emptyList());
         bookCache = new BookCache(cacheRepo);
         bookCache.init();
-        bookService = new BookService(bookRepository, authorService, bookCache);
+        bookService = new BookService(bookRepository, authorService, bookCache, borrowTransactionRepository);
         sampleAuthor = Author.builder().id(1L).name("Joshua Bloch").build();
         sampleBook = Book.builder()
                 .isbn("978-0-13-468599-1")
@@ -76,7 +82,7 @@ class BookServiceTest {
     @Test
     void updateBook_updatesFieldsAndSaves() {
         Author newAuthor = Author.builder().id(2L).name("New Author").build();
-        when(bookRepository.findByIsbn("978-0-13-468599-1")).thenReturn(sampleBook);
+        when(bookRepository.findByIsbnAndDeletedFalse("978-0-13-468599-1")).thenReturn(sampleBook);
         when(bookRepository.save(any(Book.class))).thenReturn(sampleBook);
         when(authorService.getAuthorById(2L)).thenReturn(newAuthor);
 
@@ -93,7 +99,7 @@ class BookServiceTest {
     void updateBook_preservesBorrowedCountWhenTotalCopiesChanges() {
         Author newAuthor = Author.builder().id(2L).name("New Author").build();
         sampleBook.setAvailableCopies(2); // 3 borrowed from totalCopies=5
-        when(bookRepository.findByIsbn("978-0-13-468599-1")).thenReturn(sampleBook);
+        when(bookRepository.findByIsbnAndDeletedFalse("978-0-13-468599-1")).thenReturn(sampleBook);
         when(bookRepository.save(any(Book.class))).thenReturn(sampleBook);
         when(authorService.getAuthorById(2L)).thenReturn(newAuthor);
 
@@ -105,14 +111,43 @@ class BookServiceTest {
 
     @Test
     void updateBook_throwsWhenBookNotFound() {
-        when(bookRepository.findByIsbn("UNKNOWN")).thenReturn(null);
+        when(bookRepository.findByIsbnAndDeletedFalse("UNKNOWN")).thenReturn(null);
         assertThrows(IllegalArgumentException.class, () ->
                 bookService.updateBook("UNKNOWN", "T", 1L, "G", 1));
     }
 
     @Test
-    void removeBook_delegatesToRepository() {
+    void removeBook_deletesByIsbnWhenBookExists() {
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("978-0-13-468599-1")).thenReturn(sampleBook);
+        when(bookRepository.save(any(Book.class))).thenReturn(sampleBook);
+        when(borrowTransactionRepository.existsByBookIsbnAndReturnDateIsNull("978-0-13-468599-1")).thenReturn(false);
+
         bookService.removeBook("978-0-13-468599-1");
-        verify(bookRepository).delete("978-0-13-468599-1");
+
+        assertTrue(sampleBook.isDeleted());
+        verify(bookRepository).save(sampleBook);
+    }
+
+    @Test
+    void removeBook_throwsWhenBookNotFound() {
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("UNKNOWN")).thenReturn(null);
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
+                bookService.removeBook("UNKNOWN"));
+
+        assertEquals("Book not found with ISBN: UNKNOWN", ex.getMessage());
+        verify(bookRepository, never()).save(any(Book.class));
+    }
+
+    @Test
+    void removeBook_throwsConflictWhenBookHasActiveBorrows() {
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("978-0-13-468599-1")).thenReturn(sampleBook);
+        when(borrowTransactionRepository.existsByBookIsbnAndReturnDateIsNull("978-0-13-468599-1")).thenReturn(true);
+
+        ResourceConflictException ex = assertThrows(ResourceConflictException.class, () ->
+                bookService.removeBook("978-0-13-468599-1"));
+
+        assertEquals("Book with ISBN 978-0-13-468599-1 cannot be deleted while it has active borrows.", ex.getMessage());
+        verify(bookRepository, never()).save(any(Book.class));
     }
 }

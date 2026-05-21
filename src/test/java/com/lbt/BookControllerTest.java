@@ -4,6 +4,8 @@ import com.lbt.controllers.BookController;
 import com.lbt.controllers.GlobalExceptionHandler;
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
+import com.lbt.exceptions.ResourceConflictException;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.services.AuthorService;
 import com.lbt.services.BookService;
 import org.junit.jupiter.api.Test;
@@ -123,5 +125,23 @@ class BookControllerTest {
         mockMvc.perform(delete("/api/v1/books/978-1"))
                 .andExpect(status().isNoContent());
         verify(bookService).removeBook("978-1");
+    }
+
+    @Test
+    void deleteBook_returns404WhenBookNotFound() throws Exception {
+        doThrow(new ResourceNotFoundException("Book not found with ISBN: UNKNOWN"))
+                .when(bookService).removeBook("UNKNOWN");
+
+        mockMvc.perform(delete("/api/v1/books/UNKNOWN"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteBook_returns409WhenBookHasActiveBorrows() throws Exception {
+        doThrow(new ResourceConflictException("Book with ISBN 978-1 cannot be deleted while it has active borrows."))
+                .when(bookService).removeBook("978-1");
+
+        mockMvc.perform(delete("/api/v1/books/978-1"))
+                .andExpect(status().isConflict());
     }
 }

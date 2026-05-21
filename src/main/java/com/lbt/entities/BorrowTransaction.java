@@ -23,6 +23,10 @@ public class BorrowTransaction implements Validatable {
     @Column(name = "book_isbn", nullable = false, length = 50)
     private String bookIsbn;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "book_id", nullable = false, foreignKey = @ForeignKey(name = "fk_borrow_transaction_book"))
+    private Book book;
+
     @Column(name = "member_id", nullable = false, length = 50)
     private String memberId;
 

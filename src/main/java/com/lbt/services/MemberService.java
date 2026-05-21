@@ -2,8 +2,10 @@ package com.lbt.services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.lbt.entities.Member;
+import com.lbt.exceptions.ResourceConflictException;
 import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.repositories.MemberRepository;
 import com.lbt.validation.ValidationHandler;
@@ -89,10 +91,14 @@ public class MemberService {
         return savedMember;
     }
 
+    @Transactional
     public void deleteMember(String memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findByMemberIdForUpdate(memberId);
         if (member == null) {
             throw new IllegalArgumentException("Member not found: " + memberId);
+        }
+        if (transactionRepository.existsByMemberIdAndReturnDateIsNull(memberId)) {
+            throw new ResourceConflictException("Member " + memberId + " cannot be deleted while they have active borrows.");
         }
         memberRepository.delete(member);
         memberCache.evict(memberId);

@@ -2,10 +2,14 @@ package com.lbt.services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
+import com.lbt.exceptions.ResourceConflictException;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.repositories.BookRepository;
+import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.validation.ValidationHandler;
 import com.lbt.validation.ValidationHandlerResolver;
 import com.lbt.validation.ValidationError;
@@ -21,20 +25,27 @@ public class BookService {
 
     private final BookCache bookCache;
 
+    private final BorrowTransactionRepository borrowTransactionRepository;
+
     private final ValidationHandler validationHandler;
 
-    public BookService(BookRepository bookRepository, AuthorService authorService, BookCache bookCache) {
-        this(bookRepository, authorService, bookCache, ValidationHandlerResolver.get());
+    public BookService(BookRepository bookRepository,
+                       AuthorService authorService,
+                       BookCache bookCache,
+                       BorrowTransactionRepository borrowTransactionRepository) {
+        this(bookRepository, authorService, bookCache, borrowTransactionRepository, ValidationHandlerResolver.get());
     }
 
     @Autowired
     public BookService(BookRepository bookRepository,
                        AuthorService authorService,
                        BookCache bookCache,
+                       BorrowTransactionRepository borrowTransactionRepository,
                        ValidationHandler validationHandler) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.bookCache = bookCache;
+        this.borrowTransactionRepository = borrowTransactionRepository;
         this.validationHandler = validationHandler;
     }
 
@@ -66,7 +77,7 @@ public class BookService {
     }
 
     public Book updateBook(String isbn, String title, Long authorId, String genre, int totalCopies) {
-        Book book = bookRepository.findByIsbn(isbn);
+        Book book = bookRepository.findByIsbnAndDeletedFalse(isbn);
         if (book == null) {
             throw new IllegalArgumentException("Book not found with ISBN: " + isbn);
         }
@@ -81,8 +92,17 @@ public class BookService {
         return savedBook;
     }
 
+    @Transactional
     public void removeBook(String isbn) {
-        bookRepository.delete(isbn);
+        Book book = bookRepository.findByIsbnAndDeletedFalseForUpdate(isbn);
+        if (book == null) {
+            throw new ResourceNotFoundException("Book not found with ISBN: " + isbn);
+        }
+        if (borrowTransactionRepository.existsByBookIsbnAndReturnDateIsNull(isbn)) {
+            throw new ResourceConflictException("Book with ISBN " + isbn + " cannot be deleted while it has active borrows.");
+        }
+        book.setDeleted(true);
+        bookRepository.save(book);
         bookCache.evict(isbn);
     }
 }

@@ -9,7 +9,6 @@ import com.lbt.entities.BorrowTransaction;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface BorrowTransactionRepository extends JpaRepository<BorrowTransaction, Long> {
@@ -24,6 +23,10 @@ public interface BorrowTransactionRepository extends JpaRepository<BorrowTransac
 
     List<BorrowTransaction> findByBookIsbnAndMemberIdAndReturnDateIsNullOrderByBorrowDateAscIdAsc(
             String bookIsbn, String memberId);
+
+    boolean existsByBookIsbnAndReturnDateIsNull(String bookIsbn);
+
+    boolean existsByMemberIdAndReturnDateIsNull(String memberId);
 
     @Query("SELECT t FROM BorrowTransaction t " +
            "WHERE t.returnDate IS NULL AND t.dueDate < :checkDate")

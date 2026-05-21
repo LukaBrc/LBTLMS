@@ -42,6 +42,10 @@ public class Book implements Validatable {
     @Column(name = "available_copies", nullable = false)
     private int availableCopies;
 
+    @Builder.Default
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
+
     @PrePersist
     private void defaultAvailableCopies() {
         if (availableCopies == 0 && totalCopies > 0) {

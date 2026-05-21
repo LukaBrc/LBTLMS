@@ -3,6 +3,7 @@ package com.lbt;
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.repositories.BookRepository;
+import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.services.AuthorService;
 import com.lbt.services.BookCache;
 import com.lbt.services.BookService;
@@ -18,19 +19,21 @@ class BookServiceWriteThroughPropertyTest {
 
     private final BookRepository bookRepository;
     private final AuthorService authorService;
+    private final BorrowTransactionRepository borrowTransactionRepository;
     private final BookCache bookCache;
     private final BookService bookService;
 
     BookServiceWriteThroughPropertyTest() {
         this.bookRepository = mock(BookRepository.class);
         this.authorService = mock(AuthorService.class);
+        this.borrowTransactionRepository = mock(BorrowTransactionRepository.class);
 
         BookRepository cacheRepository = mock(BookRepository.class);
-        when(cacheRepository.findAll()).thenReturn(Collections.emptyList());
+        when(cacheRepository.findAllByDeletedFalse()).thenReturn(Collections.emptyList());
         this.bookCache = new BookCache(cacheRepository);
         this.bookCache.init();
 
-        this.bookService = new BookService(bookRepository, authorService, bookCache);
+        this.bookService = new BookService(bookRepository, authorService, bookCache, borrowTransactionRepository);
     }
 
     @Property(tries = 100)
@@ -50,7 +53,7 @@ class BookServiceWriteThroughPropertyTest {
 
     @Property(tries = 100)
     void afterUpdateBookCacheReflectsUpdate(@ForAll("validBooks") Book book, @ForAll("validTitles") String newTitle) {
-        when(bookRepository.findByIsbn(book.getIsbn())).thenReturn(book);
+        when(bookRepository.findByIsbnAndDeletedFalse(book.getIsbn())).thenReturn(book);
         Author author = book.getAuthor();
         when(authorService.getAuthorById(author.getId())).thenReturn(author);
         when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -70,8 +73,9 @@ class BookServiceWriteThroughPropertyTest {
         bookCache.put(book);
         assertNotNull(bookService.findByIsbn(book.getIsbn()), "Precondition: book should be in cache before removal");
 
-        when(bookRepository.existsByIsbn(book.getIsbn())).thenReturn(true);
-        doNothing().when(bookRepository).deleteByIsbn(book.getIsbn());
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate(book.getIsbn())).thenReturn(book);
+        when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(borrowTransactionRepository.existsByBookIsbnAndReturnDateIsNull(book.getIsbn())).thenReturn(false);
 
         bookService.removeBook(book.getIsbn());
 
