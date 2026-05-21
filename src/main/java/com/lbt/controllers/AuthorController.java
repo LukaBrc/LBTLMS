@@ -43,35 +43,23 @@ public class AuthorController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AuthorResponse> getAuthorById(@PathVariable Long id) {
-        try {
-            Author author = authorService.getAuthorById(id);
-            return ResponseEntity.ok(toResponse(author));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Author author = authorService.getAuthorById(id);
+        return ResponseEntity.ok(toResponse(author));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AuthorResponse> updateAuthor(@PathVariable Long id,
                                                        @Valid @RequestBody AuthorRequest request) {
-        try {
-            Author author = authorService.updateAuthor(id, request.getName());
-            return ResponseEntity.ok(toResponse(author));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Author author = authorService.updateAuthor(id, request.getName());
+        return ResponseEntity.ok(toResponse(author));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiMessageResponse> deleteAuthor(@PathVariable Long id) {
-        try {
-            authorService.deleteAuthor(id);
-            return ResponseEntity.ok(ApiMessageResponse.builder()
-                    .message("Author deleted successfully")
-                    .build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        authorService.deleteAuthor(id);
+        return ResponseEntity.ok(ApiMessageResponse.builder()
+                .message("Author deleted successfully")
+                .build());
     }
 
 

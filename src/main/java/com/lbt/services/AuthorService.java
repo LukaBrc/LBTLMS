@@ -1,6 +1,7 @@
 package com.lbt.services;
 
 import com.lbt.entities.Author;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.repositories.AuthorRepository;
 import com.lbt.validation.ValidationHandler;
 import com.lbt.validation.ValidationHandlerResolver;
@@ -57,12 +58,12 @@ public class AuthorService {
             throw new IllegalArgumentException("Author id must not be null.");
         }
         return authorCache.getById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Author not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
     }
 
     public Author updateAuthor(Long id, String name) {
         Author author = authorRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new IllegalArgumentException("Author not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
         author.setName(name);
         validateAuthor(author);
         Author saved = authorRepository.save(author);
@@ -72,7 +73,7 @@ public class AuthorService {
 
     public void deleteAuthor(Long id) {
         Author author = authorRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new IllegalArgumentException("Author not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
         author.setDeleted(true);
         authorRepository.save(author);
         authorCache.evict(id);

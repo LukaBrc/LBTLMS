@@ -3,6 +3,7 @@ package com.lbt;
 import com.lbt.controllers.AuthorController;
 import com.lbt.controllers.GlobalExceptionHandler;
 import com.lbt.entities.Author;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.services.AuthorService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,10 +83,11 @@ class AuthorControllerTest {
     @Test
     void getAuthorById_returns404WhenNotFound() throws Exception {
         when(authorService.getAuthorById(999L))
-                .thenThrow(new IllegalArgumentException("Author not found with id: 999"));
+                .thenThrow(new ResourceNotFoundException("Author not found with id: 999"));
 
         mockMvc.perform(get("/api/v1/authors/999"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Author not found with id: 999"));
     }
 
     @Test
@@ -106,14 +108,15 @@ class AuthorControllerTest {
     @Test
     void putAuthor_returns404WhenNotFound() throws Exception {
         when(authorService.updateAuthor(eq(999L), eq("Any Name")))
-                .thenThrow(new IllegalArgumentException("Author not found with id: 999"));
+                .thenThrow(new ResourceNotFoundException("Author not found with id: 999"));
 
         mockMvc.perform(put("/api/v1/authors/999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"name":"Any Name"}
                             """))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Author not found with id: 999"));
     }
 
     @Test
@@ -128,11 +131,12 @@ class AuthorControllerTest {
 
     @Test
     void deleteAuthor_returns404WhenNotFound() throws Exception {
-        doThrow(new IllegalArgumentException("Author not found with id: 999"))
+        doThrow(new ResourceNotFoundException("Author not found with id: 999"))
                 .when(authorService).deleteAuthor(999L);
 
         mockMvc.perform(delete("/api/v1/authors/999"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Author not found with id: 999"));
     }
 
     @Test
