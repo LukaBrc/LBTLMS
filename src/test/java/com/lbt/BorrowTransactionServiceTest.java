@@ -68,7 +68,7 @@ class BorrowTransactionServiceTest {
 
     @Test
     void borrowBook_successfulBorrow() {
-        when(bookRepository.findByIsbnAndDeletedFalse("ISBN-1")).thenReturn(sampleBook);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("ISBN-1")).thenReturn(sampleBook);
         when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
         when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -83,13 +83,13 @@ class BorrowTransactionServiceTest {
 
     @Test
     void borrowBook_returnsFalseWhenBookNotFound() {
-        when(bookRepository.findByIsbnAndDeletedFalse("UNKNOWN")).thenReturn(null);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("UNKNOWN")).thenReturn(null);
         assertFalse(borrowService.borrowBook("UNKNOWN", "M001"));
     }
 
     @Test
     void borrowBook_returnsFalseWhenMemberNotFound() {
-        when(bookRepository.findByIsbnAndDeletedFalse("ISBN-1")).thenReturn(sampleBook);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("ISBN-1")).thenReturn(sampleBook);
         when(memberRepository.findByMemberId("UNKNOWN")).thenReturn(null);
         assertFalse(borrowService.borrowBook("ISBN-1", "UNKNOWN"));
     }
@@ -99,7 +99,7 @@ class BorrowTransactionServiceTest {
         for (int i = 0; i < 5; i++) {
             sampleMember.borrowBook("ISBN-" + i);
         }
-        when(bookRepository.findByIsbnAndDeletedFalse("ISBN-1")).thenReturn(sampleBook);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("ISBN-1")).thenReturn(sampleBook);
         when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
 
         assertFalse(borrowService.borrowBook("ISBN-1", "M001"));
@@ -110,7 +110,7 @@ class BorrowTransactionServiceTest {
         sampleBook = Book.builder()
                 .isbn("ISBN-1").title("T").author(sampleAuthor).genre("G")
                 .totalCopies(1).availableCopies(0).build();
-        when(bookRepository.findByIsbnAndDeletedFalse("ISBN-1")).thenReturn(sampleBook);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("ISBN-1")).thenReturn(sampleBook);
         when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
 
         assertFalse(borrowService.borrowBook("ISBN-1", "M001"));

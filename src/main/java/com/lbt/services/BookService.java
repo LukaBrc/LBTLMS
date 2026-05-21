@@ -2,6 +2,7 @@ package com.lbt.services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
@@ -91,14 +92,15 @@ public class BookService {
         return savedBook;
     }
 
+    @Transactional
     public void removeBook(String isbn) {
-        if (!bookRepository.existsByIsbnAndDeletedFalse(isbn)) {
+        Book book = bookRepository.findByIsbnAndDeletedFalseForUpdate(isbn);
+        if (book == null) {
             throw new ResourceNotFoundException("Book not found with ISBN: " + isbn);
         }
         if (borrowTransactionRepository.existsByBookIsbnAndReturnDateIsNull(isbn)) {
             throw new ResourceConflictException("Book with ISBN " + isbn + " cannot be deleted while it has active borrows.");
         }
-        Book book = bookRepository.findByIsbn(isbn);
         book.setDeleted(true);
         bookRepository.save(book);
         bookCache.evict(isbn);

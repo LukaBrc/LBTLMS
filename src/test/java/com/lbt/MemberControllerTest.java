@@ -3,6 +3,7 @@ package com.lbt;
 import com.lbt.controllers.GlobalExceptionHandler;
 import com.lbt.controllers.MemberController;
 import com.lbt.entities.Member;
+import com.lbt.exceptions.ResourceConflictException;
 import com.lbt.services.MemberService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,5 +130,14 @@ class MemberControllerTest {
 
         mockMvc.perform(delete("/api/v1/members/UNKNOWN"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deleteMember_returns409WhenMemberHasActiveBorrows() throws Exception {
+        doThrow(new ResourceConflictException("Member M001 cannot be deleted while they have active borrows."))
+                .when(memberService).deleteMember("M001");
+
+        mockMvc.perform(delete("/api/v1/members/M001"))
+                .andExpect(status().isConflict());
     }
 }

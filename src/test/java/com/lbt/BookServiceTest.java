@@ -118,8 +118,7 @@ class BookServiceTest {
 
     @Test
     void removeBook_deletesByIsbnWhenBookExists() {
-        when(bookRepository.existsByIsbnAndDeletedFalse("978-0-13-468599-1")).thenReturn(true);
-        when(bookRepository.findByIsbn("978-0-13-468599-1")).thenReturn(sampleBook);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("978-0-13-468599-1")).thenReturn(sampleBook);
         when(bookRepository.save(any(Book.class))).thenReturn(sampleBook);
         when(borrowTransactionRepository.existsByBookIsbnAndReturnDateIsNull("978-0-13-468599-1")).thenReturn(false);
 
@@ -131,7 +130,7 @@ class BookServiceTest {
 
     @Test
     void removeBook_throwsWhenBookNotFound() {
-        when(bookRepository.existsByIsbnAndDeletedFalse("UNKNOWN")).thenReturn(false);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("UNKNOWN")).thenReturn(null);
 
         ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
                 bookService.removeBook("UNKNOWN"));
@@ -142,7 +141,7 @@ class BookServiceTest {
 
     @Test
     void removeBook_throwsConflictWhenBookHasActiveBorrows() {
-        when(bookRepository.existsByIsbnAndDeletedFalse("978-0-13-468599-1")).thenReturn(true);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate("978-0-13-468599-1")).thenReturn(sampleBook);
         when(borrowTransactionRepository.existsByBookIsbnAndReturnDateIsNull("978-0-13-468599-1")).thenReturn(true);
 
         ResourceConflictException ex = assertThrows(ResourceConflictException.class, () ->

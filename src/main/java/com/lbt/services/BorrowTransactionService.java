@@ -48,7 +48,7 @@ public class BorrowTransactionService {
 
     @Transactional
     public boolean borrowBook(String isbn, String memberId) {
-        Book book = bookRepository.findByIsbnAndDeletedFalse(isbn);
+        Book book = bookRepository.findByIsbnAndDeletedFalseForUpdate(isbn);
         Member member = memberRepository.findByMemberId(memberId);
 
         if (book == null) return false;

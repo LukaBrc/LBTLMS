@@ -73,8 +73,7 @@ class BookServiceWriteThroughPropertyTest {
         bookCache.put(book);
         assertNotNull(bookService.findByIsbn(book.getIsbn()), "Precondition: book should be in cache before removal");
 
-        when(bookRepository.existsByIsbnAndDeletedFalse(book.getIsbn())).thenReturn(true);
-        when(bookRepository.findByIsbn(book.getIsbn())).thenReturn(book);
+        when(bookRepository.findByIsbnAndDeletedFalseForUpdate(book.getIsbn())).thenReturn(book);
         when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(borrowTransactionRepository.existsByBookIsbnAndReturnDateIsNull(book.getIsbn())).thenReturn(false);
 

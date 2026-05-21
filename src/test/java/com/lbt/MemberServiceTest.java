@@ -1,6 +1,7 @@
 package com.lbt;
 
 import com.lbt.entities.Member;
+import com.lbt.exceptions.ResourceConflictException;
 import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.repositories.MemberRepository;
 import com.lbt.services.MemberCache;
@@ -89,15 +90,28 @@ class MemberServiceTest {
 
     @Test
     void deleteMember_deletesMember() {
-        when(memberRepository.findByMemberId("M001")).thenReturn(sampleMember);
+        when(memberRepository.findByMemberIdForUpdate("M001")).thenReturn(sampleMember);
+        when(transactionRepository.existsByMemberIdAndReturnDateIsNull("M001")).thenReturn(false);
         memberService.deleteMember("M001");
         verify(memberRepository).delete(sampleMember);
     }
 
     @Test
     void deleteMember_throwsWhenMemberNotFound() {
-        when(memberRepository.findByMemberId("UNKNOWN")).thenReturn(null);
+        when(memberRepository.findByMemberIdForUpdate("UNKNOWN")).thenReturn(null);
         assertThrows(IllegalArgumentException.class, () ->
                 memberService.deleteMember("UNKNOWN"));
+    }
+
+    @Test
+    void deleteMember_throwsConflictWhenMemberHasActiveBorrows() {
+        when(memberRepository.findByMemberIdForUpdate("M001")).thenReturn(sampleMember);
+        when(transactionRepository.existsByMemberIdAndReturnDateIsNull("M001")).thenReturn(true);
+
+        ResourceConflictException ex = assertThrows(ResourceConflictException.class, () ->
+                memberService.deleteMember("M001"));
+
+        assertEquals("Member M001 cannot be deleted while they have active borrows.", ex.getMessage());
+        verify(memberRepository, never()).delete(any(Member.class));
     }
 }
