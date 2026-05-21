@@ -47,7 +47,8 @@ class BookControllerTest {
                         .content("""
                             {"title":"Effective Java","authorId":1,"isbn":"978-1","genre":"Programming","totalCopies":5}
                             """))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Book added successfully"));
         verify(bookService).addBook(any(Book.class));
     }
 
@@ -121,9 +122,22 @@ class BookControllerTest {
     }
 
     @Test
+    void putBook_returns400WhenAuthorIdMissing() throws Exception {
+        mockMvc.perform(put("/api/v1/books/978-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"title":"T","isbn":"978-1","genre":"G","totalCopies":1}
+                            """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.fieldErrors.authorId").value("Author id is required"));
+    }
+
+    @Test
     void deleteBook_returns204() throws Exception {
         mockMvc.perform(delete("/api/v1/books/978-1"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Book deleted successfully"));
         verify(bookService).removeBook("978-1");
     }
 

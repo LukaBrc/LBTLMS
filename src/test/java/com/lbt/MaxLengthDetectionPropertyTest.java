@@ -4,6 +4,7 @@ import com.lbt.entities.Author;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.entities.Member;
 import com.lbt.validation.ValidationError;
+import com.lbt.validation.ValidationHandlerResolver;
 
 import net.jqwik.api.*;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class MaxLengthDetectionPropertyTest {
 
 
@@ -21,7 +23,7 @@ class MaxLengthDetectionPropertyTest {
 
         Author author = Author.builder().name(longName).build();
 
-        List<ValidationError> errors = author.getValidationErrors();
+        List<ValidationError> errors = validationErrors(author);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("name")),
@@ -39,7 +41,7 @@ class MaxLengthDetectionPropertyTest {
         member.setMemberId("VALID-ID");
         member.setContact("valid@contact.com");
 
-        List<ValidationError> errors = member.getValidationErrors();
+        List<ValidationError> errors = validationErrors(member);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("name")),
@@ -57,7 +59,7 @@ class MaxLengthDetectionPropertyTest {
         member.setMemberId(longMemberId);
         member.setContact("valid@contact.com");
 
-        List<ValidationError> errors = member.getValidationErrors();
+        List<ValidationError> errors = validationErrors(member);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("memberId")),
@@ -75,7 +77,7 @@ class MaxLengthDetectionPropertyTest {
         member.setMemberId("VALID-ID");
         member.setContact(longContact);
 
-        List<ValidationError> errors = member.getValidationErrors();
+        List<ValidationError> errors = validationErrors(member);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("contact")),
@@ -93,7 +95,7 @@ class MaxLengthDetectionPropertyTest {
         tx.setMemberId("VALID-ID");
         tx.setBorrowDate(LocalDate.now());
 
-        List<ValidationError> errors = tx.getValidationErrors();
+        List<ValidationError> errors = validationErrors(tx);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("bookIsbn")),
@@ -111,7 +113,7 @@ class MaxLengthDetectionPropertyTest {
         tx.setMemberId(longMemberId);
         tx.setBorrowDate(LocalDate.now());
 
-        List<ValidationError> errors = tx.getValidationErrors();
+        List<ValidationError> errors = validationErrors(tx);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("memberId")),
@@ -121,7 +123,7 @@ class MaxLengthDetectionPropertyTest {
 
 
     @Provide
-    Arbitrary<String> nonBlankStringsOver150() {
+    public Arbitrary<String> nonBlankStringsOver150() {
         return Arbitraries.strings()
                 .ofMinLength(151)
                 .ofMaxLength(500)
@@ -130,7 +132,7 @@ class MaxLengthDetectionPropertyTest {
     }
 
     @Provide
-    Arbitrary<String> nonBlankStringsOver50() {
+    public Arbitrary<String> nonBlankStringsOver50() {
         return Arbitraries.strings()
                 .ofMinLength(51)
                 .ofMaxLength(200)
@@ -139,11 +141,15 @@ class MaxLengthDetectionPropertyTest {
     }
 
     @Provide
-    Arbitrary<String> nonBlankStringsOver200() {
+    public Arbitrary<String> nonBlankStringsOver200() {
         return Arbitraries.strings()
                 .ofMinLength(201)
                 .ofMaxLength(600)
                 .alpha()
                 .filter(s -> !s.trim().isEmpty());
+    }
+
+    private List<ValidationError> validationErrors(Object entity) {
+        return ValidationHandlerResolver.get().getValidationErrors(entity);
     }
 }

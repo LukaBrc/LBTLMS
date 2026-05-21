@@ -13,6 +13,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unused")
 class AuthorNameFilterCorrectnessPropertyTest {
 
     @Property(tries = 100)
@@ -30,7 +31,7 @@ class AuthorNameFilterCorrectnessPropertyTest {
 
         AuthorService authorService = new AuthorService(mockRepository, authorCache);
 
-        List<Author> result = authorService.getAuthorsByName(filter);
+        List<Author> result = authorService.searchAuthorsByNameContains(filter);
 
         List<Author> excluded = authors.stream()
                 .filter(a -> !result.contains(a))
@@ -52,7 +53,7 @@ class AuthorNameFilterCorrectnessPropertyTest {
 
 
     @Provide
-    Arbitrary<List<Author>> randomAuthorLists() {
+    public Arbitrary<List<Author>> randomAuthorLists() {
         Arbitrary<Author> authorArbitrary = Combinators.combine(
                 Arbitraries.longs().between(1L, 100_000L),
                 Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(50)
@@ -62,7 +63,7 @@ class AuthorNameFilterCorrectnessPropertyTest {
     }
 
     @Provide
-    Arbitrary<String> nonBlankStrings() {
+    public Arbitrary<String> nonBlankStrings() {
         return Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(10);
     }
 }

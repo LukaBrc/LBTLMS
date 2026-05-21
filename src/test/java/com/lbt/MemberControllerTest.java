@@ -45,7 +45,8 @@ class MemberControllerTest {
                         .content("""
                             {"name":"Alice","memberId":"M001","contact":"alice@test.com"}
                             """))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Member registered successfully"));
         verify(memberService).registerMember("Alice", "M001", "alice@test.com");
     }
 
@@ -119,7 +120,8 @@ class MemberControllerTest {
     @Test
     void deleteMember_returns204() throws Exception {
         mockMvc.perform(delete("/api/v1/members/M001"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Member deleted successfully"));
         verify(memberService).deleteMember("M001");
     }
 

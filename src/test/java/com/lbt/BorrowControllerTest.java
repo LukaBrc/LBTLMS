@@ -37,7 +37,7 @@ class BorrowControllerTest {
                             {"isbn":"ISBN-1","memberId":"M001"}
                             """))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Book borrowed successfully"));
+                .andExpect(jsonPath("$.message").value("Book borrowed successfully"));
     }
 
     @Test
@@ -49,7 +49,8 @@ class BorrowControllerTest {
                         .content("""
                             {"isbn":"ISBN-1","memberId":"M001"}
                             """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Cannot borrow book (not available, limit reached, etc.)"));
     }
 
     @Test
@@ -62,7 +63,7 @@ class BorrowControllerTest {
                             {"isbn":"ISBN-1","memberId":"M001"}
                             """))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Book returned successfully"));
+                .andExpect(jsonPath("$.message").value("Book returned successfully"));
     }
 
     @Test
@@ -74,7 +75,8 @@ class BorrowControllerTest {
                         .content("""
                             {"isbn":"ISBN-1","memberId":"M001"}
                             """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("No active borrow found"));
     }
 
     @Test

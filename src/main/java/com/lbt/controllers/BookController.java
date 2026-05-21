@@ -2,6 +2,7 @@ package com.lbt.controllers;
 
 import com.lbt.dto.BookRequest;
 import com.lbt.dto.BookResponse;
+import com.lbt.dto.ApiMessageResponse;
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.services.AuthorService;
@@ -27,7 +28,7 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> addBook(@Valid @RequestBody BookRequest request) {
+    public ResponseEntity<ApiMessageResponse> addBook(@Valid @RequestBody BookRequest request) {
         Author author = authorService.getAuthorById(request.getAuthorId());
         var book = Book.builder()
                 .title(request.getTitle())
@@ -40,7 +41,7 @@ public class BookController {
 
         bookService.addBook(book);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(message("Book added successfully"));
     }
 
     @GetMapping
@@ -71,9 +72,13 @@ public class BookController {
     }
 
     @DeleteMapping("/{isbn}")
-    public ResponseEntity<Void> removeBook(@PathVariable String isbn) {
+    public ResponseEntity<ApiMessageResponse> removeBook(@PathVariable String isbn) {
         bookService.removeBook(isbn);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(message("Book deleted successfully"));
+    }
+
+    private ApiMessageResponse message(String value) {
+        return ApiMessageResponse.builder().message(value).build();
     }
 
     private BookResponse toResponse(Book book) {

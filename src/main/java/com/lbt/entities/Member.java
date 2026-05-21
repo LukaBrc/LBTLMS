@@ -1,6 +1,5 @@
 package com.lbt.entities;
 
-import com.lbt.validation.Validatable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @Table(name = "members")
-public class Member implements Validatable {
+public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,9 +59,6 @@ public class Member implements Validatable {
         return "Member: " + name + " (ID:" + memberId + ") Borrowed: " + borrowedIsbns.size();
     }
 
-    public Long getId() {
-        return id;
-    }
 
     @Override
     public boolean equals(Object o) {

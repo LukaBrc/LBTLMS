@@ -10,6 +10,7 @@ import com.lbt.services.AuthorService;
 import com.lbt.services.BookCache;
 import com.lbt.services.BookService;
 import com.lbt.validation.ValidationError;
+import com.lbt.validation.ValidationHandlerResolver;
 
 import net.jqwik.api.*;
 
@@ -19,18 +20,18 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unused")
 class BackwardCompatMessagePropertyTest {
 
     private final BookRepository bookRepository = mock(BookRepository.class);
     private final BorrowTransactionRepository borrowTransactionRepository = mock(BorrowTransactionRepository.class);
     private final AuthorService authorServiceMock = mock(AuthorService.class);
-    private final BookCache bookCache;
     private final BookService bookService;
 
     {
         BookRepository cacheRepo = mock(BookRepository.class);
         when(cacheRepo.findAllByDeletedFalse()).thenReturn(Collections.emptyList());
-        bookCache = new BookCache(cacheRepo);
+        BookCache bookCache = new BookCache(cacheRepo);
         bookCache.init();
         bookService = new BookService(bookRepository, authorServiceMock, bookCache, borrowTransactionRepository);
     }
@@ -126,7 +127,7 @@ class BackwardCompatMessagePropertyTest {
                 () -> bookService.addBook(book)
         );
 
-        List<ValidationError> errors = book.getValidationErrors();
+        List<ValidationError> errors = validationErrors(book);
         String expectedMessage = errors.get(0).message();
         assertEquals(expectedMessage, ex.getMessage(),
                 "Service must throw the first validation error message (declaration order)");
@@ -160,7 +161,7 @@ class BackwardCompatMessagePropertyTest {
 
 
     @Provide
-    Arbitrary<String> blankOrNullStrings() {
+    public Arbitrary<String> blankOrNullStrings() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
                 Arbitraries.just(""),
@@ -172,7 +173,7 @@ class BackwardCompatMessagePropertyTest {
     }
 
     @Provide
-    Arbitrary<String> validNonBlankStrings() {
+    public Arbitrary<String> validNonBlankStrings() {
         return Arbitraries.strings()
                 .ofMinLength(1)
                 .ofMaxLength(30)
@@ -181,10 +182,14 @@ class BackwardCompatMessagePropertyTest {
     }
 
     @Provide
-    Arbitrary<String> longNames() {
+    public Arbitrary<String> longNames() {
         return Arbitraries.strings()
                 .ofMinLength(151)
                 .ofMaxLength(300)
                 .alpha();
+    }
+
+    private List<ValidationError> validationErrors(Object entity) {
+        return ValidationHandlerResolver.get().getValidationErrors(entity);
     }
 }
