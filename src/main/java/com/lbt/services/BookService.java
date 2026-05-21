@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.repositories.BookRepository;
 import com.lbt.validation.ValidationHandler;
 import com.lbt.validation.ValidationHandlerResolver;
@@ -82,7 +83,10 @@ public class BookService {
     }
 
     public void removeBook(String isbn) {
-        bookRepository.delete(isbn);
+        if (!bookRepository.existsByIsbn(isbn)) {
+            throw new ResourceNotFoundException("Book not found with ISBN: " + isbn);
+        }
+        bookRepository.deleteByIsbn(isbn);
         bookCache.evict(isbn);
     }
 }

@@ -19,12 +19,4 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Transactional
     void deleteByIsbn(String isbn);
-
-    default boolean delete(String isbn) {
-        if (existsByIsbn(isbn)) {
-            deleteByIsbn(isbn);
-            return true;
-        }
-        return false;
-    }
 }

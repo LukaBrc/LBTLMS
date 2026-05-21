@@ -2,6 +2,7 @@ package com.lbt;
 
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.repositories.BookRepository;
 import com.lbt.services.AuthorService;
 import com.lbt.services.BookCache;
@@ -111,8 +112,22 @@ class BookServiceTest {
     }
 
     @Test
-    void removeBook_delegatesToRepository() {
+    void removeBook_deletesByIsbnWhenBookExists() {
+        when(bookRepository.existsByIsbn("978-0-13-468599-1")).thenReturn(true);
+
         bookService.removeBook("978-0-13-468599-1");
-        verify(bookRepository).delete("978-0-13-468599-1");
+
+        verify(bookRepository).deleteByIsbn("978-0-13-468599-1");
+    }
+
+    @Test
+    void removeBook_throwsWhenBookNotFound() {
+        when(bookRepository.existsByIsbn("UNKNOWN")).thenReturn(false);
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
+                bookService.removeBook("UNKNOWN"));
+
+        assertEquals("Book not found with ISBN: UNKNOWN", ex.getMessage());
+        verify(bookRepository, never()).deleteByIsbn(anyString());
     }
 }

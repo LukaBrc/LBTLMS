@@ -9,7 +9,6 @@ import com.lbt.entities.BorrowTransaction;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface BorrowTransactionRepository extends JpaRepository<BorrowTransaction, Long> {
