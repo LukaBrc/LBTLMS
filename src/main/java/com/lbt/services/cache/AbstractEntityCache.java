@@ -41,7 +41,7 @@ public abstract class AbstractEntityCache<T, K> {
      * and building an immutable snapshot.
      */
     @PostConstruct
-    public void init() {
+    public synchronized void init() {
         this.cache = buildSnapshot(loadAll());
     }
 
@@ -49,7 +49,7 @@ public abstract class AbstractEntityCache<T, K> {
      * Refreshes the cache by reloading all entities from the data source.
      * On failure, retains the previous snapshot and logs a warning.
      */
-    public void refresh() {
+    public synchronized void refresh() {
         try {
             this.cache = buildSnapshot(loadAll());
         } catch (Exception e) {
@@ -81,7 +81,7 @@ public abstract class AbstractEntityCache<T, K> {
      *
      * @param entity the entity to add or update
      */
-    public void put(T entity) {
+    public synchronized void put(T entity) {
         cache.put(extractKey(entity), entity);
     }
 
@@ -91,7 +91,7 @@ public abstract class AbstractEntityCache<T, K> {
      *
      * @param key the key of the entity to remove
      */
-    public void evict(K key) {
+    public synchronized void evict(K key) {
         cache.invalidate(key);
     }
 
