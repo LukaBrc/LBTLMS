@@ -1,5 +1,6 @@
 package com.lbt.entities;
 
+import com.lbt.validation.Validatable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "books")
-public class Book {
+public class Book implements Validatable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,8 +50,9 @@ public class Book {
     }
 
     public void setTotalCopies(int totalCopies) {
+        int borrowedCopies = Math.max(0, this.totalCopies - this.availableCopies);
         this.totalCopies = totalCopies;
-        this.availableCopies = totalCopies;
+        this.availableCopies = Math.max(0, totalCopies - borrowedCopies);
     }
 
     public boolean borrowCopy() {
@@ -64,6 +66,7 @@ public class Book {
     public void returnCopy() {
         if (availableCopies < totalCopies) availableCopies++;
     }
+
 
     @Override
     public String toString() {

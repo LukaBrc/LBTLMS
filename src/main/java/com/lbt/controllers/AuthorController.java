@@ -29,8 +29,9 @@ public class AuthorController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AuthorResponse>> getAllAuthors() {
-        List<Author> authors = authorService.getAllAuthors();
+    public ResponseEntity<List<AuthorResponse>> getAllAuthors(
+            @RequestParam(required = false) String name) {
+        List<Author> authors = authorService.getAuthorsByName(name);
         List<AuthorResponse> response = authors.stream()
                 .map(this::toResponse)
                 .toList();

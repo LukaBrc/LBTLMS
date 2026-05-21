@@ -1,5 +1,6 @@
 package com.lbt.entities;
 
+import com.lbt.validation.Validatable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @Table(name = "borrow_transactions")
-public class BorrowTransaction {
+public class BorrowTransaction implements Validatable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +39,7 @@ public class BorrowTransaction {
         this.borrowDate = borrowDate;
         this.dueDate = (borrowDate != null) ? borrowDate.plusDays(14) : null;
     }
+
 
     public boolean isActive() {
         return returnDate == null;

@@ -1,5 +1,6 @@
 package com.lbt.entities;
 
+import com.lbt.validation.Validatable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "authors")
-public class Author {
+public class Author implements Validatable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +29,7 @@ public class Author {
     @Builder.Default
     @Column(name = "deleted", nullable = false)
     private boolean deleted = false;
+
 
     @Override
     public boolean equals(Object o) {

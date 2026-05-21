@@ -14,7 +14,6 @@ import java.util.Optional;
 @Repository
 public interface BorrowTransactionRepository extends JpaRepository<BorrowTransaction, Long> {
 
-    // Exact matches to your old IBorrowTransactionRepository
     List<BorrowTransaction> findByReturnDateIsNull();
 
     List<BorrowTransaction> findByMemberId(String memberId);
@@ -23,7 +22,7 @@ public interface BorrowTransactionRepository extends JpaRepository<BorrowTransac
 
     List<BorrowTransaction> findByMemberIdAndReturnDateIsNull(String memberId);
 
-    Optional<BorrowTransaction> findByBookIsbnAndMemberIdAndReturnDateIsNull(
+    List<BorrowTransaction> findByBookIsbnAndMemberIdAndReturnDateIsNullOrderByBorrowDateAscIdAsc(
             String bookIsbn, String memberId);
 
     @Query("SELECT t FROM BorrowTransaction t " +

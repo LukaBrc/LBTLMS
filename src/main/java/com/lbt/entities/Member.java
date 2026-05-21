@@ -1,5 +1,6 @@
 package com.lbt.entities;
 
+import com.lbt.validation.Validatable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @Table(name = "members")
-public class Member {
+public class Member implements Validatable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +43,7 @@ public class Member {
     }
 
     public void borrowBook(String isbn) {
-        if (!borrowedIsbns.contains(isbn)) borrowedIsbns.add(isbn);
+        borrowedIsbns.add(isbn);
     }
 
     public void returnBook(String isbn) {
@@ -50,9 +51,9 @@ public class Member {
     }
 
     public void setBorrowedIsbns(List<String> isbns) {
-        borrowedIsbns.clear();
-        borrowedIsbns.addAll(isbns);
+        this.borrowedIsbns = isbns == null ? new ArrayList<>() : new ArrayList<>(isbns);
     }
+
 
     @Override
     public String toString() {
