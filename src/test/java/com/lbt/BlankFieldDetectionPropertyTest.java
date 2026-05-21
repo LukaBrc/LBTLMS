@@ -5,6 +5,7 @@ import com.lbt.entities.Book;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.entities.Member;
 import com.lbt.validation.ValidationError;
+import com.lbt.validation.ValidationHandlerResolver;
 
 import net.jqwik.api.*;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class BlankFieldDetectionPropertyTest {
 
 
@@ -23,7 +25,7 @@ class BlankFieldDetectionPropertyTest {
                 .author(Author.builder().name("Valid Author").build())
                 .build();
 
-        List<ValidationError> errors = book.getValidationErrors();
+        List<ValidationError> errors = validationErrors(book);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("title")),
@@ -40,7 +42,7 @@ class BlankFieldDetectionPropertyTest {
                 .author(Author.builder().name("Valid Author").build())
                 .build();
 
-        List<ValidationError> errors = book.getValidationErrors();
+        List<ValidationError> errors = validationErrors(book);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("isbn")),
@@ -58,7 +60,7 @@ class BlankFieldDetectionPropertyTest {
                 .author(null)
                 .build();
 
-        List<ValidationError> errors = book.getValidationErrors();
+        List<ValidationError> errors = validationErrors(book);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("author")),
@@ -73,7 +75,7 @@ class BlankFieldDetectionPropertyTest {
                 .name(blankName)
                 .build();
 
-        List<ValidationError> errors = author.getValidationErrors();
+        List<ValidationError> errors = validationErrors(author);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("name")),
@@ -89,7 +91,7 @@ class BlankFieldDetectionPropertyTest {
         member.setMemberId("VALID-001");
         member.setContact("valid@example.com");
 
-        List<ValidationError> errors = member.getValidationErrors();
+        List<ValidationError> errors = validationErrors(member);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("name")),
@@ -105,7 +107,7 @@ class BlankFieldDetectionPropertyTest {
         member.setMemberId(blankMemberId);
         member.setContact("valid@example.com");
 
-        List<ValidationError> errors = member.getValidationErrors();
+        List<ValidationError> errors = validationErrors(member);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("memberId")),
@@ -121,7 +123,7 @@ class BlankFieldDetectionPropertyTest {
         member.setMemberId("VALID-001");
         member.setContact(blankContact);
 
-        List<ValidationError> errors = member.getValidationErrors();
+        List<ValidationError> errors = validationErrors(member);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("contact")),
@@ -137,7 +139,7 @@ class BlankFieldDetectionPropertyTest {
         tx.setMemberId("VALID-001");
         tx.setBorrowDate(java.time.LocalDate.now());
 
-        List<ValidationError> errors = tx.getValidationErrors();
+        List<ValidationError> errors = validationErrors(tx);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("bookIsbn")),
@@ -153,7 +155,7 @@ class BlankFieldDetectionPropertyTest {
         tx.setMemberId(blankMemberId);
         tx.setBorrowDate(java.time.LocalDate.now());
 
-        List<ValidationError> errors = tx.getValidationErrors();
+        List<ValidationError> errors = validationErrors(tx);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("memberId")),
@@ -170,7 +172,7 @@ class BlankFieldDetectionPropertyTest {
         tx.setMemberId(memberId);
         tx.setBorrowDate(null);
 
-        List<ValidationError> errors = tx.getValidationErrors();
+        List<ValidationError> errors = validationErrors(tx);
 
         assertTrue(
                 errors.stream().anyMatch(e -> e.field().equals("borrowDate")),
@@ -180,7 +182,7 @@ class BlankFieldDetectionPropertyTest {
 
 
     @Provide
-    Arbitrary<String> blankOrNullStrings() {
+    public Arbitrary<String> blankOrNullStrings() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
                 Arbitraries.just(""),
@@ -192,11 +194,15 @@ class BlankFieldDetectionPropertyTest {
     }
 
     @Provide
-    Arbitrary<String> validNonBlankStrings() {
+    public Arbitrary<String> validNonBlankStrings() {
         return Arbitraries.strings()
                 .ofMinLength(1)
                 .ofMaxLength(30)
                 .alpha()
                 .filter(s -> !s.trim().isEmpty());
+    }
+
+    private List<ValidationError> validationErrors(Object entity) {
+        return ValidationHandlerResolver.get().getValidationErrors(entity);
     }
 }

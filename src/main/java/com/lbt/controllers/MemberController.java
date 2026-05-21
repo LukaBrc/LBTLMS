@@ -2,6 +2,7 @@ package com.lbt.controllers;
 
 import com.lbt.dto.MemberRequest;
 import com.lbt.dto.MemberResponse;
+import com.lbt.dto.ApiMessageResponse;
 import com.lbt.entities.Member;
 import com.lbt.services.MemberService;
 import jakarta.validation.Valid;
@@ -24,9 +25,9 @@ public class MemberController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> registerMember(@Valid @RequestBody MemberRequest request) {
+    public ResponseEntity<ApiMessageResponse> registerMember(@Valid @RequestBody MemberRequest request) {
         memberService.registerMember(request.getName(), request.getMemberId(), request.getContact());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(message("Member registered successfully"));
     }
 
     @GetMapping
@@ -56,9 +57,13 @@ public class MemberController {
     }
 
     @DeleteMapping("/{memberId}")
-    public ResponseEntity<Void> deleteMember(@PathVariable String memberId) {
+    public ResponseEntity<ApiMessageResponse> deleteMember(@PathVariable String memberId) {
         memberService.deleteMember(memberId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(message("Member deleted successfully"));
+    }
+
+    private ApiMessageResponse message(String value) {
+        return ApiMessageResponse.builder().message(value).build();
     }
 
     private MemberResponse toResponse(Member member) {

@@ -13,6 +13,7 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unused")
 class MemberServiceWriteThroughPropertyTest {
 
     private final MemberRepository memberRepository;
@@ -96,7 +97,8 @@ class MemberServiceWriteThroughPropertyTest {
         when(transactionRepository.findActiveBookIsbnsByMemberId(memberId)).thenReturn(Collections.emptyList());
         assertNotNull(memberService.findById(memberId), "Precondition: member should be in cache before deletion");
 
-        when(memberRepository.findByMemberId(memberId)).thenReturn(member);
+        when(memberRepository.findByMemberIdForUpdate(memberId)).thenReturn(member);
+        when(transactionRepository.existsByMemberIdAndReturnDateIsNull(memberId)).thenReturn(false);
         doNothing().when(memberRepository).delete(member);
 
         memberService.deleteMember(memberId);

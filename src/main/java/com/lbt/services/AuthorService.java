@@ -36,12 +36,13 @@ public class AuthorService {
         return saved;
     }
 
+
     public List<Author> getAllAuthors() {
         return authorCache.getAll();
     }
 
-    public List<Author> getAuthorsByName(String name) {
-        List<Author> all = authorCache.getAll();
+    public List<Author> searchAuthorsByNameContains(String name) {
+        List<Author> all = getAllAuthors();
         if (name == null || name.isBlank()) {
             return all;
         }
@@ -52,6 +53,9 @@ public class AuthorService {
     }
 
     public Author getAuthorById(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Author id must not be null.");
+        }
         return authorCache.getById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Author not found with id: " + id));
     }
