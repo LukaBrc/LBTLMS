@@ -5,6 +5,7 @@ import com.lbt.repositories.BorrowTransactionRepository;
 import com.lbt.repositories.MemberRepository;
 import com.lbt.services.MemberService;
 import com.lbt.validation.ValidationError;
+import com.lbt.validation.ValidationHandlerResolver;
 
 import net.jqwik.api.*;
 
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unused")
 class SemicolonJoinedMessagePropertyTest {
 
     @Property(tries = 100)
@@ -35,7 +37,7 @@ class SemicolonJoinedMessagePropertyTest {
         member.setMemberId(memberId);
         member.setContact(contact);
 
-        List<ValidationError> errors = member.getValidationErrors();
+        List<ValidationError> errors = validationErrors(member);
 
         Assume.that(!errors.isEmpty());
 
@@ -55,7 +57,7 @@ class SemicolonJoinedMessagePropertyTest {
 
 
     @Provide
-    Arbitrary<String> invalidMemberName() {
+    public Arbitrary<String> invalidMemberName() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
                 Arbitraries.just(""),
@@ -72,7 +74,7 @@ class SemicolonJoinedMessagePropertyTest {
     }
 
     @Provide
-    Arbitrary<String> invalidMemberId() {
+    public Arbitrary<String> invalidMemberId() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
                 Arbitraries.just(""),
@@ -89,7 +91,7 @@ class SemicolonJoinedMessagePropertyTest {
     }
 
     @Provide
-    Arbitrary<String> invalidMemberContact() {
+    public Arbitrary<String> invalidMemberContact() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
                 Arbitraries.just(""),
@@ -103,5 +105,9 @@ class SemicolonJoinedMessagePropertyTest {
                         .ofMinLength(201)
                         .ofMaxLength(250)
         );
+    }
+
+    private List<ValidationError> validationErrors(Object entity) {
+        return ValidationHandlerResolver.get().getValidationErrors(entity);
     }
 }

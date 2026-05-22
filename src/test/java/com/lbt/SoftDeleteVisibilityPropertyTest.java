@@ -1,6 +1,7 @@
 package com.lbt;
 
 import com.lbt.entities.Author;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.repositories.AuthorRepository;
 import com.lbt.services.AuthorCache;
 import com.lbt.services.AuthorService;
@@ -51,9 +52,9 @@ class SoftDeleteVisibilityPropertyTest {
 
         AuthorService service = new AuthorService(repo, cache);
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
                 () -> service.getAuthorById(nonExistentId),
-                "getAuthorById should throw IllegalArgumentException for non-existent id");
+                "getAuthorById should throw ResourceNotFoundException for non-existent id");
         assertTrue(ex.getMessage().contains(String.valueOf(nonExistentId)),
                 "Exception message should contain the requested id");
     }
@@ -70,9 +71,9 @@ class SoftDeleteVisibilityPropertyTest {
 
         AuthorService service = new AuthorService(repo, cache);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(ResourceNotFoundException.class,
                 () -> service.updateAuthor(deletedAuthorId, newName),
-                "updateAuthor should throw IllegalArgumentException for soft-deleted author");
+                "updateAuthor should throw ResourceNotFoundException for soft-deleted author");
     }
 
     @Property(tries = 100)
@@ -86,9 +87,9 @@ class SoftDeleteVisibilityPropertyTest {
 
         AuthorService service = new AuthorService(repo, cache);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(ResourceNotFoundException.class,
                 () -> service.deleteAuthor(deletedAuthorId),
-                "deleteAuthor should throw IllegalArgumentException for soft-deleted author");
+                "deleteAuthor should throw ResourceNotFoundException for soft-deleted author");
     }
 
     @Provide

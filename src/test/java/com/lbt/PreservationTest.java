@@ -4,8 +4,6 @@ import com.lbt.controllers.BookController;
 import com.lbt.controllers.BorrowController;
 import com.lbt.controllers.GlobalExceptionHandler;
 import com.lbt.controllers.MemberController;
-import com.lbt.dto.BookResponse;
-import com.lbt.dto.MemberResponse;
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.entities.BorrowTransaction;
@@ -205,10 +203,11 @@ class PreservationTest {
 
 
         @Test
-        @DisplayName("Test 5 - DELETE /api/v1/books/{isbn} returns 204 No Content")
+        @DisplayName("Test 5 - DELETE /api/v1/books/{isbn} returns 200 with JSON message")
         void bookDelete() throws Exception {
             mockMvc.perform(delete("/api/v1/books/978-0-13-235088-4"))
-                    .andExpect(status().isNoContent());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("Book deleted successfully"));
 
             verify(bookService).removeBook("978-0-13-235088-4");
         }
@@ -270,7 +269,7 @@ class PreservationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(borrowJson))
                     .andExpect(status().isOk())
-                    .andExpect(content().string("Book borrowed successfully"));
+                    .andExpect(jsonPath("$.message").value("Book borrowed successfully"));
 
             verify(borrowTransactionService).borrowBook("978-0-13-235088-4", "M001");
         }
@@ -291,7 +290,7 @@ class PreservationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(returnJson))
                     .andExpect(status().isOk())
-                    .andExpect(content().string("Book returned successfully"));
+                    .andExpect(jsonPath("$.message").value("Book returned successfully"));
 
             verify(borrowTransactionService).returnBook("978-0-13-235088-4", "M001");
         }
@@ -334,7 +333,7 @@ class PreservationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(bookJson))
                     .andExpect(status().isBadRequest())
-                    .andExpect(content().string("Book ISBN must not be empty."));
+                    .andExpect(jsonPath("$.message").value("Book ISBN must not be empty."));
         }
 
         @Test
@@ -353,9 +352,10 @@ class PreservationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(invalidJson))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.title").value("Title is required"))
-                    .andExpect(jsonPath("$.isbn").value("ISBN is required"))
-                    .andExpect(jsonPath("$.genre").value("Genre is required"));
+                    .andExpect(jsonPath("$.message").value("Validation failed"))
+                    .andExpect(jsonPath("$.fieldErrors.title").value("Title is required"))
+                    .andExpect(jsonPath("$.fieldErrors.isbn").value("ISBN is required"))
+                    .andExpect(jsonPath("$.fieldErrors.genre").value("Genre is required"));
         }
     }
 

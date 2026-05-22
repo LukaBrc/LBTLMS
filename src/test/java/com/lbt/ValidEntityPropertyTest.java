@@ -4,6 +4,7 @@ import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.entities.Member;
+import com.lbt.validation.ValidationHandlerResolver;
 
 import net.jqwik.api.*;
 
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class ValidEntityPropertyTest {
 
     @Property(tries = 100)
@@ -18,8 +20,8 @@ class ValidEntityPropertyTest {
     void validAuthorProducesNoErrors(@ForAll("validAuthorNames") String name) {
         Author author = Author.builder().name(name).build();
 
-        assertTrue(author.isValid(), "Valid Author should return isValid() == true");
-        assertTrue(author.getValidationErrors().isEmpty(),
+        assertTrue(ValidationHandlerResolver.get().isValid(author), "Valid Author should return isValid() == true");
+        assertTrue(ValidationHandlerResolver.get().getValidationErrors(author).isEmpty(),
                 "Valid Author should have no validation errors");
     }
 
@@ -37,8 +39,8 @@ class ValidEntityPropertyTest {
                 .isbn(isbn)
                 .build();
 
-        assertTrue(book.isValid(), "Valid Book should return isValid() == true");
-        assertTrue(book.getValidationErrors().isEmpty(),
+        assertTrue(ValidationHandlerResolver.get().isValid(book), "Valid Book should return isValid() == true");
+        assertTrue(ValidationHandlerResolver.get().getValidationErrors(book).isEmpty(),
                 "Valid Book should have no validation errors");
     }
 
@@ -54,8 +56,8 @@ class ValidEntityPropertyTest {
         member.setMemberId(memberId);
         member.setContact(contact);
 
-        assertTrue(member.isValid(), "Valid Member should return isValid() == true");
-        assertTrue(member.getValidationErrors().isEmpty(),
+        assertTrue(ValidationHandlerResolver.get().isValid(member), "Valid Member should return isValid() == true");
+        assertTrue(ValidationHandlerResolver.get().getValidationErrors(member).isEmpty(),
                 "Valid Member should have no validation errors");
     }
 
@@ -71,8 +73,8 @@ class ValidEntityPropertyTest {
         transaction.setMemberId(memberId);
         transaction.setBorrowDate(borrowDate);
 
-        assertTrue(transaction.isValid(), "Valid BorrowTransaction should return isValid() == true");
-        assertTrue(transaction.getValidationErrors().isEmpty(),
+        assertTrue(ValidationHandlerResolver.get().isValid(transaction), "Valid BorrowTransaction should return isValid() == true");
+        assertTrue(ValidationHandlerResolver.get().getValidationErrors(transaction).isEmpty(),
                 "Valid BorrowTransaction should have no validation errors");
     }
 

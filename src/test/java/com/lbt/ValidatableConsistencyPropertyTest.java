@@ -4,7 +4,7 @@ import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.entities.Member;
-import com.lbt.validation.Validatable;
+import com.lbt.validation.ValidationHandlerResolver;
 
 import net.jqwik.api.*;
 
@@ -12,6 +12,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class ValidatableConsistencyPropertyTest {
 
     @Property(tries = 100)
@@ -38,16 +39,16 @@ class ValidatableConsistencyPropertyTest {
         assertConsistency(transaction);
     }
 
-    private void assertConsistency(Validatable entity) {
-        boolean isValid = entity.isValid();
-        boolean errorsEmpty = entity.getValidationErrors().isEmpty();
+    private void assertConsistency(Object entity) {
+        boolean isValid = ValidationHandlerResolver.get().isValid(entity);
+        boolean errorsEmpty = ValidationHandlerResolver.get().getValidationErrors(entity).isEmpty();
         assertEquals(isValid, errorsEmpty,
                 String.format("isValid()=%s but getValidationErrors().isEmpty()=%s for %s",
                         isValid, errorsEmpty, entity));
     }
 
     @Provide
-    Arbitrary<Book> randomBooks() {
+    public Arbitrary<Book> randomBooks() {
         Arbitrary<String> titles = nullableString();
         Arbitrary<Author> authors = Arbitraries.oneOf(
                 Arbitraries.just(null),
@@ -66,12 +67,12 @@ class ValidatableConsistencyPropertyTest {
     }
 
     @Provide
-    Arbitrary<Author> randomAuthors() {
+    public Arbitrary<Author> randomAuthors() {
         return nullableStringWithLength().map(name -> Author.builder().name(name).build());
     }
 
     @Provide
-    Arbitrary<Member> randomMembers() {
+    public Arbitrary<Member> randomMembers() {
         Arbitrary<String> names = nullableStringWithLength();
         Arbitrary<String> memberIds = nullableStringWithId();
         Arbitrary<String> contacts = nullableStringWithContact();
@@ -87,7 +88,7 @@ class ValidatableConsistencyPropertyTest {
     }
 
     @Provide
-    Arbitrary<BorrowTransaction> randomBorrowTransactions() {
+    public Arbitrary<BorrowTransaction> randomBorrowTransactions() {
         Arbitrary<String> bookIsbns = nullableStringWithId();
         Arbitrary<String> memberIds = nullableStringWithId();
         Arbitrary<LocalDate> borrowDates = Arbitraries.oneOf(

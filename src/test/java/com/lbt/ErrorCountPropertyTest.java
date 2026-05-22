@@ -5,6 +5,7 @@ import com.lbt.entities.Book;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.entities.Member;
 import com.lbt.validation.ValidationError;
+import com.lbt.validation.ValidationHandlerResolver;
 
 import net.jqwik.api.*;
 
@@ -15,6 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class ErrorCountPropertyTest {
 
 
@@ -42,7 +44,7 @@ class ErrorCountPropertyTest {
                 .isbn(isbn)
                 .build();
 
-        List<ValidationError> errors = book.getValidationErrors();
+        List<ValidationError> errors = validationErrors(book);
 
         assertEquals(violationCount, errors.size(),
                 "Expected " + violationCount + " validation errors for Book with fields violated: "
@@ -56,7 +58,7 @@ class ErrorCountPropertyTest {
                 .name(invalidName)
                 .build();
 
-        List<ValidationError> errors = author.getValidationErrors();
+        List<ValidationError> errors = validationErrors(author);
 
         assertEquals(1, errors.size(),
                 "Expected exactly 1 validation error for Author with invalid name '"
@@ -83,7 +85,7 @@ class ErrorCountPropertyTest {
             }
         }
 
-        List<ValidationError> errors = member.getValidationErrors();
+        List<ValidationError> errors = validationErrors(member);
 
         assertEquals(violationCount, errors.size(),
                 "Expected " + violationCount + " validation errors for Member with fields violated: "
@@ -111,7 +113,7 @@ class ErrorCountPropertyTest {
             }
         }
 
-        List<ValidationError> errors = tx.getValidationErrors();
+        List<ValidationError> errors = validationErrors(tx);
 
         assertEquals(violationCount, errors.size(),
                 "Expected " + violationCount + " validation errors for BorrowTransaction with fields violated: "
@@ -120,22 +122,22 @@ class ErrorCountPropertyTest {
 
 
     @Provide
-    Arbitrary<Integer> bookViolationCount() {
+    public Arbitrary<Integer> bookViolationCount() {
         return Arbitraries.integers().between(1, 3);
     }
 
     @Provide
-    Arbitrary<Integer> memberViolationCount() {
+    public Arbitrary<Integer> memberViolationCount() {
         return Arbitraries.integers().between(1, 3);
     }
 
     @Provide
-    Arbitrary<Integer> borrowTransactionViolationCount() {
+    public Arbitrary<Integer> borrowTransactionViolationCount() {
         return Arbitraries.integers().between(1, 3);
     }
 
     @Provide
-    Arbitrary<String> blankOrNullStrings() {
+    public Arbitrary<String> blankOrNullStrings() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
                 Arbitraries.just(""),
@@ -144,5 +146,9 @@ class ErrorCountPropertyTest {
                         .ofMinLength(1)
                         .ofMaxLength(20)
         );
+    }
+
+    private List<ValidationError> validationErrors(Object entity) {
+        return ValidationHandlerResolver.get().getValidationErrors(entity);
     }
 }

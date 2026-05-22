@@ -73,6 +73,9 @@ public abstract class AbstractEntityCache<T, K> {
      * @return an Optional containing the entity, or empty if not found
      */
     public Optional<T> getById(K key) {
+        if (key == null) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(cache.getIfPresent(key));
     }
 
@@ -92,6 +95,9 @@ public abstract class AbstractEntityCache<T, K> {
      * @param key the key of the entity to remove
      */
     public synchronized void evict(K key) {
+        if (key == null) {
+            return;
+        }
         cache.invalidate(key);
     }
 

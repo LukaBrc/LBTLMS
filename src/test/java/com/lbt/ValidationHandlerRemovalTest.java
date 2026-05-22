@@ -1,6 +1,7 @@
 package com.lbt;
 
 import com.lbt.controllers.GlobalExceptionHandler;
+import com.lbt.dto.ApiErrorResponse;
 import com.lbt.entities.Author;
 import com.lbt.entities.Book;
 import com.lbt.entities.BorrowTransaction;
@@ -22,11 +23,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class ValidationHandlerRemovalTest {
 
@@ -76,7 +76,7 @@ class ValidationHandlerRemovalTest {
                             throw new RuntimeException("Failed to read file: " + path, e);
                         }
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             assertFalse(imports.isEmpty(), "Expected ValidationHandler to be imported by service classes.");
         }
@@ -88,10 +88,11 @@ class ValidationHandlerRemovalTest {
     void handleIllegalArgument_returnsHttp400WithMessage() {
         IllegalArgumentException ex = new IllegalArgumentException("Book title must not be empty.");
 
-        ResponseEntity<String> response = handler.handleIllegalArgument(ex);
+        ResponseEntity<ApiErrorResponse> response = handler.handleIllegalArgument(ex);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Book title must not be empty.", response.getBody());
+        assertNotNull(response.getBody());
+        assertEquals("Book title must not be empty.", response.getBody().getMessage());
     }
 
     @Test
@@ -100,10 +101,11 @@ class ValidationHandlerRemovalTest {
         DataIntegrityViolationException ex =
                 new DataIntegrityViolationException("Duplicate entry for key 'isbn'");
 
-        ResponseEntity<String> response = handler.handleDataIntegrityViolation(ex);
+        ResponseEntity<ApiErrorResponse> response = handler.handleDataIntegrityViolation(ex);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-        assertEquals("A database constraint was violated", response.getBody());
+        assertNotNull(response.getBody());
+        assertEquals("A database constraint was violated", response.getBody().getMessage());
     }
 
     @Test
@@ -113,15 +115,17 @@ class ValidationHandlerRemovalTest {
         bindingResult.addError(new FieldError("target", "title", "Title is required"));
         bindingResult.addError(new FieldError("target", "isbn", "ISBN is required"));
 
-        MethodArgumentNotValidException ex =
-                new MethodArgumentNotValidException(null, bindingResult);
+        MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
+        when(ex.getBindingResult()).thenReturn(bindingResult);
 
-        ResponseEntity<Map<String, String>> response = handler.handleValidationErrors(ex);
+        ResponseEntity<ApiErrorResponse> response = handler.handleValidationErrors(ex);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Title is required", response.getBody().get("title"));
-        assertEquals("ISBN is required", response.getBody().get("isbn"));
-        assertEquals(2, response.getBody().size());
+        assertEquals("Validation failed", response.getBody().getMessage());
+        assertNotNull(response.getBody().getFieldErrors());
+        assertEquals("Title is required", response.getBody().getFieldErrors().get("title"));
+        assertEquals("ISBN is required", response.getBody().getFieldErrors().get("isbn"));
+        assertEquals(2, response.getBody().getFieldErrors().size());
     }
 }

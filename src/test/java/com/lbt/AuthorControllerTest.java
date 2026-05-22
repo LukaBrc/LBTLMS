@@ -3,6 +3,7 @@ package com.lbt;
 import com.lbt.controllers.AuthorController;
 import com.lbt.controllers.GlobalExceptionHandler;
 import com.lbt.entities.Author;
+import com.lbt.exceptions.ResourceNotFoundException;
 import com.lbt.services.AuthorService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ class AuthorControllerTest {
     void getAllAuthors_returns200WithList() throws Exception {
         Author a1 = Author.builder().id(1L).name("Author A").build();
         Author a2 = Author.builder().id(2L).name("Author B").build();
-        when(authorService.getAuthorsByName(null)).thenReturn(List.of(a1, a2));
+        when(authorService.getAllAuthors()).thenReturn(List.of(a1, a2));
 
         mockMvc.perform(get("/api/v1/authors"))
                 .andExpect(status().isOk())
@@ -64,6 +65,8 @@ class AuthorControllerTest {
                 .andExpect(jsonPath("$[0].name").value("Author A"))
                 .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].name").value("Author B"));
+
+        verify(authorService).getAllAuthors();
     }
 
     @Test
@@ -80,10 +83,11 @@ class AuthorControllerTest {
     @Test
     void getAuthorById_returns404WhenNotFound() throws Exception {
         when(authorService.getAuthorById(999L))
-                .thenThrow(new IllegalArgumentException("Author not found with id: 999"));
+                .thenThrow(new ResourceNotFoundException("Author not found with id: 999"));
 
         mockMvc.perform(get("/api/v1/authors/999"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Author not found with id: 999"));
     }
 
     @Test
@@ -104,14 +108,15 @@ class AuthorControllerTest {
     @Test
     void putAuthor_returns404WhenNotFound() throws Exception {
         when(authorService.updateAuthor(eq(999L), eq("Any Name")))
-                .thenThrow(new IllegalArgumentException("Author not found with id: 999"));
+                .thenThrow(new ResourceNotFoundException("Author not found with id: 999"));
 
         mockMvc.perform(put("/api/v1/authors/999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"name":"Any Name"}
                             """))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Author not found with id: 999"));
     }
 
     @Test
@@ -119,35 +124,37 @@ class AuthorControllerTest {
         doNothing().when(authorService).deleteAuthor(1L);
 
         mockMvc.perform(delete("/api/v1/authors/1"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Author deleted successfully"));
         verify(authorService).deleteAuthor(1L);
     }
 
     @Test
     void deleteAuthor_returns404WhenNotFound() throws Exception {
-        doThrow(new IllegalArgumentException("Author not found with id: 999"))
+        doThrow(new ResourceNotFoundException("Author not found with id: 999"))
                 .when(authorService).deleteAuthor(999L);
 
         mockMvc.perform(delete("/api/v1/authors/999"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Author not found with id: 999"));
     }
 
     @Test
-    void getAllAuthors_withNameParam_delegatesToGetAuthorsByName() throws Exception {
+    void getAllAuthors_withNameParam_delegatesToSearchAuthorsByNameContains() throws Exception {
         Author a1 = Author.builder().id(1L).name("Joshua Bloch").build();
-        when(authorService.getAuthorsByName("Josh")).thenReturn(List.of(a1));
+        when(authorService.searchAuthorsByNameContains("Josh")).thenReturn(List.of(a1));
 
         mockMvc.perform(get("/api/v1/authors").param("name", "Josh"))
                 .andExpect(status().isOk());
 
-        verify(authorService).getAuthorsByName("Josh");
+        verify(authorService).searchAuthorsByNameContains("Josh");
     }
 
     @Test
     void getAllAuthors_withNameParam_returnsOnlyMatchingAuthors() throws Exception {
         Author a1 = Author.builder().id(1L).name("Joshua Bloch").build();
         Author a2 = Author.builder().id(3L).name("Josh Long").build();
-        when(authorService.getAuthorsByName("Josh")).thenReturn(List.of(a1, a2));
+        when(authorService.searchAuthorsByNameContains("Josh")).thenReturn(List.of(a1, a2));
 
         mockMvc.perform(get("/api/v1/authors").param("name", "Josh"))
                 .andExpect(status().isOk())
@@ -160,7 +167,7 @@ class AuthorControllerTest {
 
     @Test
     void getAllAuthors_withNameParam_noMatches_returnsEmptyList() throws Exception {
-        when(authorService.getAuthorsByName("NonExistent")).thenReturn(List.of());
+        when(authorService.searchAuthorsByNameContains("NonExistent")).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/authors").param("name", "NonExistent"))
                 .andExpect(status().isOk())
@@ -170,7 +177,7 @@ class AuthorControllerTest {
     @Test
     void getAllAuthors_responseStructure_containsIdAndNameFields() throws Exception {
         Author a1 = Author.builder().id(42L).name("Martin Fowler").build();
-        when(authorService.getAuthorsByName("Martin")).thenReturn(List.of(a1));
+        when(authorService.searchAuthorsByNameContains("Martin")).thenReturn(List.of(a1));
 
         mockMvc.perform(get("/api/v1/authors").param("name", "Martin"))
                 .andExpect(status().isOk())

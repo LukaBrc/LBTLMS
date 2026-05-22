@@ -90,11 +90,12 @@ class BugConditionApiTest {
     }
 
     @Test
-    @DisplayName("Test 7 - Bug 8: DELETE /api/v1/members/{memberId} should return 204")
+    @DisplayName("Test 7 - Bug 8: DELETE /api/v1/members/{memberId} should return 200")
     void memberControllerDeleteEndpoint() throws Exception {
 
         mockMvc.perform(delete("/api/v1/members/M001"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Member deleted successfully"));
     }
 
     @Test

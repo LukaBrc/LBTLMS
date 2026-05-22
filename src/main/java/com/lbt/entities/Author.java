@@ -1,6 +1,5 @@
 package com.lbt.entities;
 
-import com.lbt.validation.Validatable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +16,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "authors")
-public class Author implements Validatable {
+public class Author {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

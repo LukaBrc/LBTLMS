@@ -13,6 +13,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unused")
 class AuthorNameFilterNullBlankPropertyTest {
 
     @Property(tries = 100)
@@ -30,7 +31,7 @@ class AuthorNameFilterNullBlankPropertyTest {
 
         AuthorService authorService = new AuthorService(mockRepository, authorCache);
 
-        List<Author> result = authorService.getAuthorsByName(filter);
+        List<Author> result = authorService.searchAuthorsByNameContains(filter);
 
         assertEquals(authors.size(), result.size(),
                 "Result size must equal the full author list size when filter is null/blank");
@@ -42,7 +43,7 @@ class AuthorNameFilterNullBlankPropertyTest {
 
 
     @Provide
-    Arbitrary<List<Author>> randomAuthorLists() {
+    public Arbitrary<List<Author>> randomAuthorLists() {
         Arbitrary<Author> authorArbitrary = Combinators.combine(
                 Arbitraries.longs().between(1L, 100_000L),
                 Arbitraries.strings().alpha().ofMinLength(1).ofMaxLength(50)
@@ -52,7 +53,7 @@ class AuthorNameFilterNullBlankPropertyTest {
     }
 
     @Provide
-    Arbitrary<String> nullOrBlankStrings() {
+    public Arbitrary<String> nullOrBlankStrings() {
         return Arbitraries.oneOf(
                 Arbitraries.just(null),
                 Arbitraries.just(""),

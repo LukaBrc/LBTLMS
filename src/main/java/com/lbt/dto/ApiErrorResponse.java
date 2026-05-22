@@ -5,15 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberResponse {
-    private String memberId;
-    private String name;
-    private String contact;
-    private List<String> borrowedIsbns;
+public class ApiErrorResponse {
+    private String message;
+    private Map<String, String> fieldErrors;
 }
+
