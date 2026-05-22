@@ -4,6 +4,7 @@ import com.lbt.dto.ApiMessageResponse;
 import com.lbt.dto.BorrowRequest;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.services.BorrowTransactionService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class BorrowController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiMessageResponse> borrowBook(@RequestBody BorrowRequest request) {
+    public ResponseEntity<ApiMessageResponse> borrowBook(@Valid @RequestBody BorrowRequest request) {
         boolean success = borrowService.borrowBook(request.getIsbn(), request.getMemberId());
         if (!success) {
             throw new IllegalArgumentException("Cannot borrow book (not available, limit reached, etc.)");
@@ -30,7 +31,7 @@ public class BorrowController {
     }
 
     @PostMapping("/return")
-    public ResponseEntity<ApiMessageResponse> returnBook(@RequestBody BorrowRequest request) {
+    public ResponseEntity<ApiMessageResponse> returnBook(@Valid @RequestBody BorrowRequest request) {
         boolean success = borrowService.returnBook(request.getIsbn(), request.getMemberId());
         if (!success) {
             throw new IllegalArgumentException("No active borrow found");

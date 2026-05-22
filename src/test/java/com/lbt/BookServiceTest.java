@@ -32,21 +32,18 @@ class BookServiceTest {
     @Mock
     private BorrowTransactionRepository borrowTransactionRepository;
 
-    private BookCache bookCache;
-
     private BookService bookService;
 
-    private Author sampleAuthor;
     private Book sampleBook;
 
     @BeforeEach
     void setUp() {
         BookRepository cacheRepo = mock(BookRepository.class);
         when(cacheRepo.findAllByDeletedFalse()).thenReturn(Collections.emptyList());
-        bookCache = new BookCache(cacheRepo);
+        BookCache bookCache = new BookCache(cacheRepo);
         bookCache.init();
         bookService = new BookService(bookRepository, authorService, bookCache, borrowTransactionRepository);
-        sampleAuthor = Author.builder().id(1L).name("Joshua Bloch").build();
+        Author sampleAuthor = Author.builder().id(1L).name("Joshua Bloch").build();
         sampleBook = Book.builder()
                 .isbn("978-0-13-468599-1")
                 .title("Effective Java")
@@ -77,6 +74,17 @@ class BookServiceTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                 bookService.addBook(sampleBook));
         assertEquals("Book title must not be empty.", ex.getMessage());
+    }
+
+    @Test
+    void addBook_throwsConflictWhenIsbnAlreadyRegistered() {
+        when(bookRepository.existsByIsbn("978-0-13-468599-1")).thenReturn(true);
+
+        ResourceConflictException ex = assertThrows(ResourceConflictException.class, () ->
+                bookService.addBook(sampleBook));
+
+        assertEquals("ISBN is already registered", ex.getMessage());
+        verify(bookRepository, never()).save(any(Book.class));
     }
 
     @Test

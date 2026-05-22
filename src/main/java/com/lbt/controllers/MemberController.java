@@ -67,11 +67,11 @@ public class MemberController {
     }
 
     private MemberResponse toResponse(Member member) {
-        MemberResponse r = new MemberResponse();
-        r.setMemberId(member.getMemberId());
-        r.setName(member.getName());
-        r.setContact(member.getContact());
-        r.setBorrowedIsbns(new ArrayList<>(member.getBorrowedIsbns()));
-        return r;
+        return MemberResponse.builder()
+                .memberId(member.getMemberId())
+                .name(member.getName())
+                .contact(member.getContact())
+                .borrowedIsbns(new ArrayList<>(member.getBorrowedIsbns()))
+                .build();
     }
 }

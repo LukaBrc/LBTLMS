@@ -53,6 +53,22 @@ class BookControllerTest {
     }
 
     @Test
+    void postBook_returns409WithJsonMessageWhenIsbnAlreadyRegistered() throws Exception {
+        when(authorService.getAuthorById(1L)).thenReturn(sampleAuthor());
+        doThrow(new ResourceConflictException("ISBN is already registered"))
+                .when(bookService).addBook(any(Book.class));
+
+        mockMvc.perform(post("/api/v1/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"title":"Effective Java","authorId":1,"isbn":"978-1","genre":"Programming","totalCopies":5}
+                            """))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message").value("ISBN is already registered"));
+    }
+
+    @Test
     void postBook_returns400WhenTitleMissing() throws Exception {
         mockMvc.perform(post("/api/v1/books")
                         .contentType(MediaType.APPLICATION_JSON)

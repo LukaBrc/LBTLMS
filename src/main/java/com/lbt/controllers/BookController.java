@@ -82,14 +82,14 @@ public class BookController {
     }
 
     private BookResponse toResponse(Book book) {
-        BookResponse r = new BookResponse();
-        r.setIsbn(book.getIsbn());
-        r.setTitle(book.getTitle());
-        r.setAuthorId(book.getAuthor().getId());
-        r.setAuthorName(book.getAuthor().getName());
-        r.setGenre(book.getGenre());
-        r.setTotalCopies(book.getTotalCopies());
-        r.setAvailableCopies(book.getAvailableCopies());
-        return r;
+        return BookResponse.builder()
+                .isbn(book.getIsbn())
+                .title(book.getTitle())
+                .authorId(book.getAuthor().getId())
+                .authorName(book.getAuthor().getName())
+                .genre(book.getGenre())
+                .totalCopies(book.getTotalCopies())
+                .availableCopies(book.getAvailableCopies())
+                .build();
     }
 }

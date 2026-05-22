@@ -64,9 +64,9 @@ public class AuthorController {
 
 
     private AuthorResponse toResponse(Author author) {
-        AuthorResponse r = new AuthorResponse();
-        r.setId(author.getId());
-        r.setName(author.getName());
-        return r;
+        return AuthorResponse.builder()
+                .id(author.getId())
+                .name(author.getName())
+                .build();
     }
 }

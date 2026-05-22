@@ -62,7 +62,7 @@ public class BookService {
     public void addBook(Book book) {
         validateBook(book);
         if (bookRepository.existsByIsbn(book.getIsbn())) {
-            throw new IllegalArgumentException("ISBN already exists");
+            throw new ResourceConflictException("ISBN is already registered");
         }
         Book savedBook = bookRepository.save(book);
         bookCache.put(savedBook);
