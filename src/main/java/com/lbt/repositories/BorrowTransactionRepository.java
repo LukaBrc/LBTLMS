@@ -36,9 +36,9 @@ public interface BorrowTransactionRepository extends JpaRepository<BorrowTransac
             "WHERE t.memberId = :memberId AND t.returnDate IS NULL")
      List<String> findActiveBookIsbnsByMemberId(@Param("memberId") String memberId);
 
-    @Query("SELECT t FROM BorrowTransaction t, Member m " +
+    @Query("SELECT t FROM BorrowTransaction t " +
+           "JOIN Member m ON t.memberId = m.memberId " +
            "WHERE t.returnDate IS NULL " +
-           "AND t.memberId = m.memberId " +
            "AND LOWER(m.name) LIKE LOWER(CONCAT('%', :memberName, '%'))")
     List<BorrowTransaction> findActiveByMemberNameContaining(@Param("memberName") String memberName);
 }
