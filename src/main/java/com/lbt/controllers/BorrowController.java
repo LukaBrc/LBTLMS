@@ -44,6 +44,11 @@ public class BorrowController {
         return ResponseEntity.ok(borrowService.getOverdueBooks());
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<List<BorrowTransaction>> getActiveLoans(@RequestParam(required = false) String memberName) {
+        return ResponseEntity.ok(borrowService.getActiveLoans(memberName));
+    }
+
 
     private ApiMessageResponse message(String message) {
         return ApiMessageResponse.builder()

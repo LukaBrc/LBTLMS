@@ -103,6 +103,13 @@ public class BorrowTransactionService {
         return transactionRepository.findOverdue(LocalDate.now());
     }
 
+    public List<BorrowTransaction> getActiveLoans(String memberName) {
+        if (memberName == null || memberName.trim().isEmpty()) {
+            return transactionRepository.findByReturnDateIsNull();
+        }
+        return transactionRepository.findActiveByMemberNameContaining(memberName.trim());
+    }
+
     public List<BorrowTransaction> getAllTransactions() {
         return transactionRepository.findAll();
     }
