@@ -84,6 +84,7 @@ src/
 - Spring Data JPA / Hibernate
 - Spring Validation (Jakarta Bean Validation)
 - Spring Scheduling
+- Springdoc OpenAPI + Swagger UI
 - Caffeine
 - MySQL (runtime) / H2 (testing)
 - Lombok
@@ -94,6 +95,13 @@ src/
 ## 🌐 API Endpoints
 
 All endpoints are prefixed with `/api/v1`.
+
+### OpenAPI Docs
+
+| Endpoint | Description |
+|----------|-------------|
+| `/api-docs` | Generated OpenAPI 3 JSON spec |
+| `/swagger-ui.html` | Swagger UI for interactive API exploration |
 
 ### Authors (`/api/v1/authors`)
 
@@ -131,6 +139,7 @@ All endpoints are prefixed with `/api/v1`.
 |--------|------|-------------|
 | POST | `/api/v1/borrows` | Borrow one copy |
 | POST | `/api/v1/borrows/return` | Return one copy |
+| GET | `/api/v1/borrows/active` | List active borrow transactions (optional `memberName` contains filter) |
 | GET | `/api/v1/borrows/overdue` | List overdue transactions |
 
 ---

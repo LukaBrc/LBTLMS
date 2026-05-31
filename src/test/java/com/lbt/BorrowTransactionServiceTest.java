@@ -184,4 +184,28 @@ class BorrowTransactionServiceTest {
         verify(transactionRepository).save(oldest);
         verify(bookCache).put(sampleBook);
     }
+
+    @Test
+    void getActiveLoans_withoutMemberName_returnsAllActiveTransactions() {
+        BorrowTransaction tx = new BorrowTransaction();
+        when(transactionRepository.findByReturnDateIsNull()).thenReturn(List.of(tx));
+
+        List<BorrowTransaction> result = borrowService.getActiveLoans(null);
+
+        assertEquals(1, result.size());
+        verify(transactionRepository).findByReturnDateIsNull();
+        verify(transactionRepository, never()).findActiveByMemberNameContaining(anyString());
+    }
+
+    @Test
+    void getActiveLoans_withMemberName_filtersByName() {
+        BorrowTransaction tx = new BorrowTransaction();
+        when(transactionRepository.findActiveByMemberNameContaining("Alice")).thenReturn(List.of(tx));
+
+        List<BorrowTransaction> result = borrowService.getActiveLoans("  Alice  ");
+
+        assertEquals(1, result.size());
+        verify(transactionRepository).findActiveByMemberNameContaining("Alice");
+        verify(transactionRepository, never()).findByReturnDateIsNull();
+    }
 }

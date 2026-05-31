@@ -91,4 +91,27 @@ class BorrowControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].bookIsbn").value("ISBN-1"));
     }
+
+    @Test
+    void getActiveLoans_returns200WithList() throws Exception {
+        BorrowTransaction tx = new BorrowTransaction();
+        tx.setBookIsbn("ISBN-2");
+        tx.setMemberId("M002");
+        tx.setBorrowDate(LocalDate.now().minusDays(2));
+        when(borrowService.getActiveLoans(null)).thenReturn(List.of(tx));
+
+        mockMvc.perform(get("/api/v1/borrows/active"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].bookIsbn").value("ISBN-2"));
+    }
+
+    @Test
+    void getActiveLoans_withMemberNameFilter_delegatesFilter() throws Exception {
+        when(borrowService.getActiveLoans("Alice")).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/borrows/active").param("memberName", "Alice"))
+                .andExpect(status().isOk());
+
+        verify(borrowService).getActiveLoans("Alice");
+    }
 }
