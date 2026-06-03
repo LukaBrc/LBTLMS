@@ -2,6 +2,7 @@ package com.lbt.controllers;
 
 import com.lbt.dto.ApiMessageResponse;
 import com.lbt.dto.BorrowRequest;
+import com.lbt.dto.BorrowTransactionResponse;
 import com.lbt.entities.BorrowTransaction;
 import com.lbt.services.BorrowTransactionService;
 import jakarta.validation.Valid;
@@ -40,19 +41,37 @@ public class BorrowController {
     }
 
     @GetMapping("/overdue")
-    public ResponseEntity<List<BorrowTransaction>> getOverdue() {
-        return ResponseEntity.ok(borrowService.getOverdueBooks());
+    public ResponseEntity<List<BorrowTransactionResponse>> getOverdue() {
+        List<BorrowTransactionResponse> response = borrowService.getOverdueBooks().stream()
+                .map(this::toResponse)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/active")
-    public ResponseEntity<List<BorrowTransaction>> getActiveLoans(@RequestParam(required = false) String memberName) {
-        return ResponseEntity.ok(borrowService.getActiveLoans(memberName));
+    public ResponseEntity<List<BorrowTransactionResponse>> getActiveLoans(@RequestParam(required = false) String memberName) {
+        List<BorrowTransactionResponse> response = borrowService.getActiveLoans(memberName).stream()
+                .map(this::toResponse)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
 
     private ApiMessageResponse message(String message) {
         return ApiMessageResponse.builder()
                 .message(message)
+                .build();
+    }
+
+    private BorrowTransactionResponse toResponse(BorrowTransaction tx) {
+        return BorrowTransactionResponse.builder()
+                .id(tx.getId())
+                .bookIsbn(tx.getBookIsbn())
+                .memberId(tx.getMemberId())
+                .borrowDate(tx.getBorrowDate())
+                .dueDate(tx.getDueDate())
+                .returnDate(tx.getReturnDate())
+                .active(tx.isActive())
                 .build();
     }
 }
